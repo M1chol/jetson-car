@@ -1,0 +1,110 @@
+import os
+import evdev
+from concurrent.futures import ThreadPoolExecutor
+from threading import Thread
+import json
+
+class Sterowanie:
+    def __init__(self, turn_max, gas_max, rpm_max):
+        self._gas = 0.0
+        self._brake = 0.0
+        self._angle = 0.0
+        self.running = True
+        self.device = None
+        self.debug = False
+        self.thread = None
+        self._buttons = {
+            'A': False,
+            'B': False,
+            'X': False,
+            'Y': False
+        }
+
+        # self.recorder = recorder
+        # self.writerList = writerList
+
+        # Parametry stałe
+        self.turn_max = turn_max
+        self.gas_max = gas_max
+        self.rpm_max = rpm_max
+        self.button_map = {
+            304: 'A',
+            305: 'B',
+            307: 'X',
+            308: 'Y',
+        }
+
+        devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+        for i, dev in enumerate(devices):
+            print(f"Urządzenie {i}: {dev.name} na {dev.path}")
+        
+        selectedDevice = None
+        if not devices:
+            print("Nie znaleziono poprawnego kontrolera...")
+            quit()
+        elif len(devices) > 1:
+            selectedDevice = evdev.list_devices[int(input("Wybierz urzadzenie: "))]
+        else:
+            selectedDevice = evdev.list_devices()[0]
+    
+        self.device = evdev.InputDevice(selectedDevice)
+        print(f"Rozpoczęto sterowanie dla {self.device}")
+        self.thread = Thread(target = self.receive_data_xbox)
+        self.thread.start()
+
+    def __del__(self):
+        print("Rozłączam Sterowanie.")
+        if self.thread:
+            self.thread.join()
+
+    def drukuj(self):
+        os.system('clear')
+        print(f'Gas/Brake: {self._gas - self._brake}\nAngle: {self._angle}')
+        print(f"A: {self._buttons['A']}\nB: {self._buttons['B']}\nX: {self._buttons['X']}\nY: {self._buttons['Y']}")
+
+    # def wyslij(self, ser_ESP, ser_ARD):
+    #     angle_to_send = f"{self._angle * 36.0}\n"
+    #     gas_brake_to_send = f"{(self._brake - self._gas) * self.rpm_max}\n"
+
+    #     ser_ESP.write(angle_to_send.encode('utf-8'))
+    #     ser_ARD.write(gas_brake_to_send.encode('utf-8'))
+
+    def receive_data_xbox(self):
+        for event in self.device.read_loop():
+            # if not self.running:
+            #     self.recorder.running = False
+            #     self.writerList[0].running = False
+            #     self.writerList[1].running = False
+            #     break
+            if event.type == evdev.ecodes.EV_KEY:
+                button_name = self.button_map.get(event.code)
+                if button_name:
+                    self._buttons[button_name] = event.value == 1
+                    if button_name == 'B' and event.value == 1:
+                        print("Zamykam program")
+                        self.running = False
+                        # self.recorder.stop_recording()
+                        # self.writerList[0].running = False
+                        # self.writerList[1].running = False
+                    if button_name == 'A' and event.value == 1:
+                        print("Rozpoczęcie rejestracji")
+                        # self.recorder.start_recording()
+                        # self.writerList[0].startRejestr()
+                        # self.writerList[1].startRejestr()
+                    if button_name == 'X' and event.value == 1:
+                        # self.recorder.stop_recording()
+                        pass
+            elif event.type == evdev.ecodes.EV_ABS:
+                if event.code == evdev.ecodes.ABS_X:
+                    self._angle = (event.value - self.turn_max / 2) / self.turn_max * 2
+                elif event.code == evdev.ecodes.ABS_Z:
+                    self._brake = event.value / self.gas_max
+                elif event.code == evdev.ecodes.ABS_RZ:
+                    self._gas = event.value / self.gas_max
+            if self.debug:
+                self.drukuj()
+            # self.wyslij(self.writerList[0].serial, self.writerList[1].serial)
+
+if __name__ == "__main__":
+    ster = Sterowanie(90, 100, 100)
+    ster.debug = True
