@@ -16,23 +16,26 @@ class Steering:
         self._stopEvent = threading.Event()
         self._currentAngle = 90
         self._currentSpeed = 0
-
-        self.DEBUG = False
-        self.MAX_ANGLE = 45
-        self.MAX_SPEED = 50
-
-    # TODO: Add Servo driver detection
-    def openSerial(self) -> str:
-        config = None
-        port = None
+        self._currentBreak = 0
+        self._currentGas = 0
+        self._config = None
         with open("config.json") as file:
-            config = json.load(file)
-        if not config:
+            self._config = json.load(file)
+        if not self._config:
             print("[STEER] Config file faild to load")
-            return False
+            raise Exception()
+        self.DEBUG = False
+        self.MAX_ANGLE = self._config["MAX_ANGLE"]
+        self.MAX_SPEED = self._config["MAX_SPEED"]
+
+    def openSerial(self) -> str:
+        port = None
         ports = serial.tools.list_ports.comports()
         for _port in ports:
-            if _port.vid == config["SERVO_VID"] and _port.pid == config["SERVO_PID"]:
+            if (
+                _port.vid == self._config["SERVO_VID"]
+                and _port.pid == self._config["SERVO_PID"]
+            ):
                 port = _port.device
         if not port:
             print("[STEER] Servo driver not found")
@@ -86,12 +89,25 @@ class Steering:
             elif event.type == evdev.ecodes.EV_ABS:
                 if event.code == evdev.ecodes.ABS_X:
                     self._currentAngle = (
-                        (event.value - self.MAX_ANGLE / 2) / self.MAX_ANGLE * 2
+                        event.value
+                        / self._config["PAD_READ_TURN"]
+                        * self._config["MAX_ANGLE"]
+                        + 90
                     )
                 if event.code == evdev.ecodes.ABS_Z:
-                    self._currentSpeed = event.value * -1 / self.MAX_SPEED
+                    self._currentBreak = (
+                        event.value
+                        / self._config["PAD_READ_SPEED"]
+                        * self._config["MAX_SPEED"]
+                    )
+                    self._currentSpeed = self._currentGas - self._currentBreak
                 if event.code == evdev.ecodes.ABS_RZ:
-                    self._currentSpeed = event.value / self.MAX_SPEED
+                    self._currentGas = (
+                        event.value
+                        / self._config["PAD_READ_SPEED"]
+                        * self._config["MAX_SPEED"]
+                    )
+                    self._currentSpeed = self._currentGas - self._currentBreak
             if self._stopEvent.is_set():
                 break
 
