@@ -1,0 +1,6 @@
+{
+  "MAX_ANGLE": 60,
+  "MAX_SPEED": 100,
+  "SERVO_VID": 4292,
+  "SERVO_PID": 60000
+}

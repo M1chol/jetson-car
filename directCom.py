@@ -1,18 +1,19 @@
 import serial
-import argparse
 import threading
-import glob 
+
+port = "/dev/ttyUSB0"
 
 
 def read_serial():
     while True:
         try:
-            data = ser.readline().decode('utf-8', errors='ignore').strip()
+            data = ser.readline().decode("utf-8", errors="ignore").strip()
             if data:
                 print(f"=> {data}")
         except Exception as e:
             # Optional: log or break if needed
             pass
+
 
 def main():
     global ser
@@ -27,11 +28,14 @@ def main():
     try:
         while True:
             command = input("")
-            ser.write(command.encode() + b'\n')
+            ser.write(command.encode() + b"\n")
     except KeyboardInterrupt:
         pass
     finally:
         ser.close()
 
+
 if __name__ == "__main__":
+    print("Use CMD<val>;<val> to send angle")
+    print("Use BEG to start feedback")
     main()

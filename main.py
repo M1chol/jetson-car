@@ -22,6 +22,7 @@ with ThreadPoolExecutor() as executor:
 
     steering.startWorker(executor)
 
+    # TODO: Add better system for tracking threads
     while input("type 'q' to quit: ") != "q":
         pass
 

@@ -2,7 +2,9 @@ import glob
 import evdev
 import threading
 import serial
+import serial.tools.list_ports
 import os
+import json
 
 
 class Steering:
@@ -21,22 +23,26 @@ class Steering:
 
     # TODO: Add Servo driver detection
     def openSerial(self) -> str:
-        devices = glob.glob("/dev/ttyUSB*")
-        if not devices:
-            print("[STEER] No ttyUSB device present")
+        config = None
+        port = None
+        with open("config.json") as file:
+            config = json.load(file)
+        if not config:
+            print("[STEER] Config file faild to load")
             return False
-        elif len(devices) == 1:
-            port = devices[0]
-        else:
-            print(devices)
-            port = devices[int(input("[STEER] Select device by index: "))]
-
+        ports = serial.tools.list_ports.comports()
+        for _port in ports:
+            if _port.vid == config["SERVO_VID"] and _port.pid == config["SERVO_PID"]:
+                port = _port.device
+        if not port:
+            print("[STEER] Servo driver not found")
+            return False
         self.serial = serial.Serial(
             port, baudrate=115200, timeout=1, dsrdtr=False, rtscts=False
         )
         self.serial.setRTS(False)
         self.serial.setDTR(False)
-        print("[STEER] Serial connected")
+        print(f"[STEER] Serial connected to {port}")
         return True
 
     def getGamePad(self) -> evdev.InputDevice:
