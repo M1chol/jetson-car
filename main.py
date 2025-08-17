@@ -3,11 +3,9 @@ from steering import Steering
 
 with ThreadPoolExecutor() as executor:
     # Step one run setup in pararel
-    sterObj = Steering()
-    sterObj.DEBUG = True
 
     print("[MAIN] Starting setup threads...")
-    steering_future = executor.submit(sterObj.setup)
+    steering_future = executor.submit(Steering().setup)
 
     wait([steering_future])
 

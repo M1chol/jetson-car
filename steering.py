@@ -1,10 +1,10 @@
-import glob
 import evdev
 import threading
 import serial
 import serial.tools.list_ports
 import os
 import json
+# import time
 
 
 class Steering:
@@ -40,11 +40,11 @@ class Steering:
         if not port:
             print("[STEER] Servo driver not found")
             return False
-        self.serial = serial.Serial(
+        self._serial = serial.Serial(
             port, baudrate=115200, timeout=1, dsrdtr=False, rtscts=False
         )
-        self.serial.setRTS(False)
-        self.serial.setDTR(False)
+        self._serial.setRTS(False)
+        self._serial.setDTR(False)
         print(f"[STEER] Serial connected to {port}")
         return True
 
@@ -72,7 +72,7 @@ class Steering:
         gamepadStatus = self.getGamePad()
         if not serialStatus or not gamepadStatus:
             print("[STEER] Setup not completed quiting")
-            self._stopEvent.set()
+            self.stop()
             return None
         return self
 
@@ -84,8 +84,7 @@ class Steering:
                     self._buttonState[button_name] = event.value == 1
                     if button_name == "B" and event.value == 1:
                         print("[STEER] Close button pressed, quiting...")
-                        # TODO: set the defaoult angle and speed for car
-                        self._stopEvent.set()
+                        self.stop()
             elif event.type == evdev.ecodes.EV_ABS:
                 if event.code == evdev.ecodes.ABS_X:
                     self._currentAngle = (
@@ -112,8 +111,13 @@ class Steering:
                 break
 
     def writeSerial(self):
-        # TODO: Write commands to the device
-        pass
+        lastAngle = self._currentAngle
+        while not self._stopEvent.is_set():
+            if self._currentAngle != lastAngle:
+                command = f"CMD{self._currentAngle:.2f};{180 - self._currentAngle:.2f}"
+                self._serial.write(command.encode() + b"\n")
+            lastAngle = self._currentAngle
+            # time.sleep(0.02)
 
     def printData(self):
         while not self._stopEvent.is_set():
@@ -125,14 +129,16 @@ class Steering:
         os.system("clear")
 
     def startWorker(self, executor):
-        # executor.submit(self.writeSerial)
+        executor.submit(self.writeSerial)
         executor.submit(self.updateGamepad)
         if self.DEBUG:
             executor.submit(self.printData)
 
     def stop(self):
+        command = "CMD90;90"
+        self._serial.write(command.encode() + b"\n")
         self._stopEvent.set()
-        print("[STEER] Thread closed")
+        print("[STEER] requested thread close")
 
 
 if __name__ == "__main__":
