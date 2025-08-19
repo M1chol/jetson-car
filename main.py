@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, wait
 from steering import Steering
+from time import sleep
 
 with ThreadPoolExecutor() as executor:
     # Step one run setup in pararel
@@ -20,9 +21,8 @@ with ThreadPoolExecutor() as executor:
 
     steering.startWorker(executor)
 
-    # TODO: Add better system for tracking threads
-    while input("type 'q' to quit: ") != "q":
-        pass
+    while not steering.getStatus():
+        sleep(1)
 
     print("[MAIN] quit requested, closing threads")
 
