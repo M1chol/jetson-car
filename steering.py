@@ -5,6 +5,7 @@ import serial.tools.list_ports
 import os
 import json
 from time import sleep
+import time
 # import time
 
 
@@ -26,7 +27,8 @@ class Steering:
         if not self._config:
             print("[STEER] Config file faild to load")
             raise Exception()
-        self.DEBUG = False
+        self.DEBUG = True
+        self.CONTROLLER = False
         self.MAX_ANGLE = self._config["MAX_ANGLE"]
         self.MAX_SPEED = self._config["MAX_SPEED"]
 
@@ -65,33 +67,43 @@ class Steering:
         )
         return True
 
-    def getGamePad(self) -> evdev.InputDevice:
-        devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-        for i, dev in enumerate(devices):
-            print(f"[STEER] Device {i}: {dev.name} na {dev.path}")
-        selectedDevice = None
-        if not devices:
+    def getGamePad(self) -> bool:
+        device_paths = evdev.list_devices()
+
+        if not device_paths:
             print("[STEER] Failed to find gamepad...")
             return False
-        elif len(devices) > 1:
-            selectedDevice = evdev.list_devices[
-                int(input("[STEER] Multiple gamepads select one: "))
-            ]
-        else:
-            selectedDevice = evdev.list_devices()[0]
 
-        self.gamepad = evdev.InputDevice(selectedDevice)
+        for i, path in enumerate(device_paths):
+            dev = evdev.InputDevice(path)
+            print(f"[STEER] Device {i}: {dev.name} at {dev.path}")
+
+        if len(device_paths) > 1:
+            try:
+                idx = int(input("[STEER] Multiple gamepads, select index: "))
+                selected_path = device_paths[idx]
+            except Exception:
+                print("[STEER] Invalid selection")
+                return False
+        else:
+            selected_path = device_paths[0]
+
+        self.gamepad = evdev.InputDevice(selected_path)
         return True
 
     def writeMotor(self, command: str) -> None:
+        if self.DEBUG:
+            print(f"[STEER -> MOTOR] {command}")
         self._serialMotor.write(command.encode() + b"\n")
 
     def _motorSetup(self) -> bool:
         print("[STEER] Starting motor setup")
+        self._serialMotor.reset_input_buffer()
+        self._serialMotor.reset_output_buffer()
         for i in range(4):
             # Check motor status
             self.writeMotor(self.generateMotorCommand("CMD_DDSM_INFO", id=i + 1))
-            if t := self._serialMotor.readline().decode("utf-8").strip():
+            if self._serialMotor.readline().decode("utf-8").strip():
                 print(f"[STEER] Motor {i + 1} ok")
             else:
                 print(f"[STEER] Motor {i + 1} failed to respond")
@@ -153,15 +165,25 @@ class Steering:
 
     def writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
-        lastSpeed = self._currentSpeed
+        last_value = None
+        last_send = 0.0
+        # Set heartbeat
+        self.writeMotor(self.generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
+        self._serialMotor.readline().decode("utf-8").strip()
         while not self._stopEvent.is_set():
-            if self._currentSpeed != lastSpeed:
-                value = self._currentSpeed
+            value = int(round(self._currentSpeed))
+            now = time.monotonic()
+            if value != last_value or (now - last_send) >= 0.5:
                 for i in range(4):
+                    cmd_val = value * self._config["MOTOR_INVERT"][i]
                     self.writeMotor(
-                        self.generateMotorCommand("CMD_DDSM_CTRL", id=i + 1, cmd=value)
+                        self.generateMotorCommand(
+                            "CMD_DDSM_CTRL", id=i + 1, cmd=cmd_val
+                        )
                     )
-            lastSpeed = self._currentSpeed
+                    sleep(0.01)
+                last_value = value
+                last_send = now
             sleep(0.1)
 
     def writeSerialServo(self) -> None:
@@ -176,13 +198,26 @@ class Steering:
 
     def readSerial(self) -> None:
         print("[STEER] readSerial worker started")
-        # while self._stopEvent.is_set():
-        #     self._serialMotor.readline()
+        while not self._stopEvent.is_set():
+            try:
+                line = self._serialMotor.readline()
+                if not line:
+                    continue
+                msg = line.decode("utf-8", errors="ignore").strip()
+                if not msg:
+                    continue
+                if self.DEBUG:
+                    print(f"[STEER <- MOTOR] {msg}")
+            except Exception as e:
+                if self.DEBUG:
+                    print(f"[MOTOR READ ERR] {e}")
 
     def printData(self) -> None:
         while not self._stopEvent.is_set():
             os.system("clear")
-            print(f"Gas/Brake: {self._currentSpeed}\n Angle: {self._currentAngle}")
+            print(
+                f"Gas/Brake: {self._currentSpeed:2.f}\n Angle: {self._currentAngle:.2f}"
+            )
             print(
                 f"A: {self._buttonState['A']}\nB: {self._buttonState['B']}\nX: {self._buttonState['X']}\nY: {self._buttonState['Y']}"
             )
@@ -193,14 +228,14 @@ class Steering:
         executor.submit(self.writeSerialMotor)
         executor.submit(self.readSerial)
         executor.submit(self.updateGamepad)
-        if self.DEBUG:
+        if self.CONTROLLER:
             executor.submit(self.printData)
 
     def stop(self) -> None:
         command = "CMD90;90"
         for i in range(4):
             self.generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
-        self._serialServo.write(command.encode() + b"\n")
+            self._serialServo.write(command.encode() + b"\n")
         self._stopEvent.set()
         print("[STEER] requested thread close")
 

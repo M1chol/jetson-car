@@ -7,6 +7,7 @@
   "SERVO_PID": 60000,
   "MOTOR_VID": 6790,
   "MOTOR_PID": 21971,
+  "MOTOR_INVERT": [1, -1, -1, 1],
   "command_map": {
       "CMD_CHANGE_Enable": {"T": 11002, "id": 1},
       "CMD_CHANGE_Disable": {"T": 11003, "id": 1},
