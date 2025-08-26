@@ -1,5 +1,6 @@
 import evdev
 import threading
+from concurrent.futures import wait
 import serial
 import serial.tools.list_ports
 import os
@@ -22,12 +23,13 @@ class Steering:
         self._currentBreak = 0
         self._currentGas = 0
         self._config = None
+        self._fileWriter = None
         with open("config.json") as file:
             self._config = json.load(file)
         if not self._config:
             print("[STEER] Config file faild to load")
             raise Exception()
-        self.DEBUG = True
+        self.DEBUG = False
         self.CONTROLLER = False
         self.MAX_ANGLE = self._config["MAX_ANGLE"]
         self.MAX_SPEED = self._config["MAX_SPEED"]
@@ -119,13 +121,15 @@ class Steering:
         print("[STEER] Finished motor setup")
         return True
 
-    def setup(self):
+    def setup(self, fileWriterFuture):
         if not self.getGamePad():
             return None
         if not self.openSerial():
             return None
         if not self._motorSetup():
             return None
+        wait([fileWriterFuture])
+        self._fileWriter = fileWriterFuture.result()
         return self
 
     def updateGamepad(self) -> None:
@@ -165,26 +169,17 @@ class Steering:
 
     def writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
-        last_value = None
-        last_send = 0.0
         # Set heartbeat
         self.writeMotor(self.generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
         self._serialMotor.readline().decode("utf-8").strip()
         while not self._stopEvent.is_set():
             value = int(round(self._currentSpeed))
-            now = time.monotonic()
-            if value != last_value or (now - last_send) >= 0.5:
-                for i in range(4):
-                    cmd_val = value * self._config["MOTOR_INVERT"][i]
-                    self.writeMotor(
-                        self.generateMotorCommand(
-                            "CMD_DDSM_CTRL", id=i + 1, cmd=cmd_val
-                        )
-                    )
-                    sleep(0.01)
-                last_value = value
-                last_send = now
-            sleep(0.1)
+            for i in range(4):
+                cmd_val = value * self._config["MOTOR_INVERT"][i]
+                self.writeMotor(
+                    self.generateMotorCommand("CMD_DDSM_CTRL", id=i + 1, cmd=cmd_val)
+                )
+                sleep(0.01)
 
     def writeSerialServo(self) -> None:
         print("[STEER] writeSerialServo worker started")
@@ -198,16 +193,25 @@ class Steering:
 
     def readSerial(self) -> None:
         print("[STEER] readSerial worker started")
+        count = 0
+        timer = time.monotonic()
         while not self._stopEvent.is_set():
             try:
+                if time.monotonic() - timer >= 10:
+                    freq = count / 40
+                    print(f"[STEER] readSerial operating at {freq}Hz")
+                    count = 0
+                    timer = time.monotonic()
                 line = self._serialMotor.readline()
                 if not line:
                     continue
                 msg = line.decode("utf-8", errors="ignore").strip()
                 if not msg:
                     continue
+                self._fileWriter.write(str(time.monotonic()) + ";" + msg)
                 if self.DEBUG:
                     print(f"[STEER <- MOTOR] {msg}")
+                count += 1
             except Exception as e:
                 if self.DEBUG:
                     print(f"[MOTOR READ ERR] {e}")
