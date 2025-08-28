@@ -63,7 +63,6 @@ There are two main parts of the software:
 2. Python code running on the Jetson
 
 ### DDSM400 Driver
-> [!NOTE]
 > This will be changed in the future to simplify the communication protocol.
 
 I am using the default example code provided by Waveshare. It comes with a lot of features, but this project uses JSON communication over UART.
@@ -88,13 +87,14 @@ Every module implements a class with two methods, `setup()` and `startWorker()`,
 - `setup()` launches tasks that prepare the module for actual work. This may include checking if devices are connected, creating files for writing, or opening serial connections. This step is crucial for synchronizing all devices.
 - `startWorker()` launches all tasks that need to be parallelized within the module.
 
-To abstract thread creation, I use Python’s `ThreadPoolExecutor` from `concurrent.futures`.
-
-Setup schematic:
+To abstract thread creation, I use Python’s `ThreadPoolExecutor` from `concurrent.futures`.    
+Setup schematic:    
+    
 ![image](https://github.com/M1chol/jetson-car/blob/main/images/setup.svg)
-
+    
 ---
-Worker launching schematic; each oval represents a thread inside `ThreadPoolExecutor`:
+Worker launching schematic; each oval represents a thread inside `ThreadPoolExecutor`:    
+    
 ![image](https://github.com/M1chol/jetson-car/blob/main/images/workers.svg)
 
 ## Getting started
