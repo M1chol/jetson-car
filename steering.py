@@ -72,25 +72,23 @@ class Steering:
 
     def getGamePad(self) -> bool:
         device_paths = evdev.list_devices()
-
-        if not device_paths:
-            print("[STEER] Failed to find gamepad...")
-            return False
+        timeout = 0
+        sleep_time = 5
+        while not device_paths:
+            print(f"[STEER] Failed to find gamepad... try {timeout//sleep_time}/{self._config["PAD_TIMEOUT"]//sleep_time}")
+            if timeout >= self._config["PAD_TIMEOUT"]:
+                return False
+            timeout += sleep_time
+            sleep(sleep_time)
+            device_paths = evdev.list_devices()
 
         for i, path in enumerate(device_paths):
             dev = evdev.InputDevice(path)
             print(f"[STEER] Device {i}: {dev.name} at {dev.path}")
 
         if len(device_paths) > 1:
-            try:
-                idx = int(input("[STEER] Multiple gamepads, select index: "))
-                selected_path = device_paths[idx]
-            except Exception:
-                print("[STEER] Invalid selection")
-                return False
-        else:
-            selected_path = device_paths[0]
-
+            print("[STEER] More then 1 gamepad detected, choosing first one")
+        selected_path = device_paths[0]
         self.gamepad = evdev.InputDevice(selected_path)
         return True
 
