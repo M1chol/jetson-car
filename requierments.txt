@@ -1,3 +1,4 @@
 pyserial
 evdev
 luma.core
+luma.oled
