@@ -3,19 +3,28 @@ from steering import Steering
 from time import sleep
 from fileHandler import FileHandler
 import argparse
+import json
 
 parser = argparse.ArgumentParser(description="Jetson powered autonomus car")
 parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 args = parser.parse_args()
+config = None
 
 with ThreadPoolExecutor() as executor:
     # Step one run setup in pararel
 
+    print("[MAIN] Loading config file...")
+    with open("config.json") as file:
+        config = json.load(file)
+        if not config:
+            print("[MAIN] Config file failed to load")
+            quit()
+    
     print("[MAIN] Starting setup threads...")
     motor_file_handler_future = executor.submit(FileHandler("motor.txt").setup)
     servo_file_handler_future = executor.submit(FileHandler("servo.txt").setup)
     steering_future = executor.submit(
-        Steering(args.debug).setup, motor_file_handler_future, servo_file_handler_future
+        Steering(config, args.debug).setup, motor_file_handler_future, servo_file_handler_future
     )
 
     # steering setup already waits for servo and motor.
