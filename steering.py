@@ -18,7 +18,7 @@ class Steering:
         self._buttonMap = {304: "A", 305: "B", 307: "X", 308: "Y"}
         self._buttonState = {"A": False, "B": False, "X": False, "Y": False}
         self._stopEvent = threading.Event()
-        self._currentAngle = 90
+        self._currentAngle = 0
         self._currentSpeed = 0
         self._currentBreak = 0
         self._currentGas = 0
@@ -164,7 +164,6 @@ class Steering:
                         event.value
                         / self._config["PAD_READ_TURN"]
                         * self._config["MAX_ANGLE"]
-                        + 90
                     )
                 if event.code == evdev.ecodes.ABS_Z:
                     self._currentBreak = (
@@ -202,7 +201,7 @@ class Steering:
         lastAngle = self._currentAngle
         while not self._stopEvent.is_set():
             if self._currentAngle != lastAngle:
-                command = f"CMD{self._currentAngle:.2f};{180 - self._currentAngle:.2f}"
+                command = f"CMD{self._currentAngle:.2f};{-self._currentAngle:.2f}"
                 self._serialServo.write(command.encode() + b"\n")
             lastAngle = self._currentAngle
             sleep(0.1)

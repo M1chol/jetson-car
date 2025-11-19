@@ -3,7 +3,7 @@ import threading
 import json
 from pprint import pprint
 
-port = "/dev/ttyACM0"
+port = "/dev/ttyUSB0"
 
 command_map = {
     "CMD_CHANGE_Enable": {"T": 11002, "id": 1},
