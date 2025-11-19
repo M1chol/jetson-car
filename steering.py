@@ -114,9 +114,9 @@ class Steering:
             # Enable motor
             self.writeMotor(self.generateMotorCommand("CMD_CHANGE_Enable", id=i + 1))
             self._serialMotor.readline()
-            # Change mode to keep speed
+            # Change mode default mode
             self.writeMotor(
-                self.generateMotorCommand("CMD_CHANGE_MODE", id=i + 1, mode=2)
+                self.generateMotorCommand("CMD_CHANGE_MODE", id=i + 1, mode=self._config["MOTOR_MODES"][self._config["MOTOR_DEFAULT_MODE"]])
             )
             self._serialMotor.readline()
         print("[STEER] Finished motor setup")
