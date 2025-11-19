@@ -12,7 +12,7 @@ SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 # Paths
 PROJECT_PATH="$(pwd)"
 PYTHON_PATH="${PROJECT_PATH}/.venv/bin/python"
-PYTHON_SCREEN_PATH="${PROJECT_PATH}/screen.py"
+PYTHON_SCREEN_PATH="${PROJECT_PATH}/tools/screen.py"
 PYTHON_MAIN_PATH="${PROJECT_PATH}/main.py"
 
 echo "Creating systemd service for $SERVICE_NAME"

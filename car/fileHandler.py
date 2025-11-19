@@ -1,7 +1,6 @@
 import queue
 import threading
 
-
 class FileHandler:
     def __init__(self, filename: str, mode: str = "w") -> None:
         self.filename = filename

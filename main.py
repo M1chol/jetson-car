@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, wait
-from steering import Steering
+from car.steering import Steering
+from car.fileHandler import FileHandler
 from time import sleep
-from fileHandler import FileHandler
 import argparse
 import json
 
