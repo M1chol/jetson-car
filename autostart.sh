@@ -23,9 +23,9 @@ Description=Autostart service for jetson-car
 
 [Service]
 Type=simple
-ExecStart=${PYTHON_PATH} ${SCRIPT1_PATH} &
-ExecStartPost=${PYTHON_PATH} ${SCRIPT2_PATH}
-Restart=always
+ExecStart=${PYTHON_PATH} ${PYTHON_SCREEN_PATH} &
+ExecStartPost=${PYTHON_PATH} ${PYTHON_MAIN_PATH}
+Restart=on-failure
 User=$(whoami)
 WorkingDirectory=${PROJECT_PATH}
 StandardOutput=journal

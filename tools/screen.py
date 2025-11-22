@@ -29,9 +29,11 @@ with canvas(device) as draw:
         fill=255,
         anchor="mm",
     )
+    print("[SCREEN] Waiting for network text displayed")
 
     ip = None
     while not ip:
+        print("[SCREEN] Waiting for ip")
         ip = get_local_ip()
         sleep(0.5)
 
@@ -39,6 +41,7 @@ with canvas(device) as draw:
 img = Image.new("1", device.size)
 draw = ImageDraw.Draw(img)
 draw.text((device.width // 2, device.height // 2), ip, fill=255, anchor="mm")
+print("[SCREEN] ip drawn to the screen")
 device.display(img)
 
 os._exit(0)

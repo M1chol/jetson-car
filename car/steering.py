@@ -5,17 +5,18 @@ import serial.tools.list_ports
 import json
 from time import sleep
 import time
-from gamepad import Gamepad
+from car.gamepad import Gamepad
+
 
 class Steering:
     def __init__(self, config, debug: bool = False) -> None:
         self._serialServo = None
         self._serialMotor = None
-        self._gamepad = Gamepad(config, debug)
         self._stopEvent = threading.Event()
         self._config = config
         self._fileWriterMotor = None
         self._fileWriterServo = None
+        self._gamepad = Gamepad(self._stopEvent, config, debug)
         self.DEBUG = debug
         self.CONTROLLER = False
         self.MAX_ANGLE = self._config["MAX_ANGLE"]
@@ -78,7 +79,13 @@ class Steering:
             self._serialMotor.readline()
             # Change mode default mode
             self.writeMotor(
-                self.generateMotorCommand("CMD_CHANGE_MODE", id=i + 1, mode=self._config["MOTOR_MODES"][self._config["MOTOR_DEFAULT_MODE"]])
+                self.generateMotorCommand(
+                    "CMD_CHANGE_MODE",
+                    id=i + 1,
+                    mode=self._config["MOTOR_MODES"][
+                        self._config["MOTOR_DEFAULT_MODE"]
+                    ],
+                )
             )
             self._serialMotor.readline()
         print("[STEER] Finished motor setup")
@@ -212,6 +219,7 @@ class Steering:
 
     def getStatus(self):
         return self._stopEvent.is_set()
+
 
 if __name__ == "__main__":
     print("This file should not be run directly. Please run main.py")
