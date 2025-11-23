@@ -19,6 +19,7 @@ steer.setup()
 with ThreadPoolExecutor as executor:
     steer.startWorker(executor)
 
+    sleep(2)
     gamepad.currentGas = 200
     sleep(2)
     gamepad.currentGas = 0
