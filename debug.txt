@@ -1,0 +1,383 @@
+[WRITER] File writer for motor.txt is ready
+[WRITER] File writer for servo.txt is ready
+[STEER] Serial connected
+[STEER]	- motor driver on /dev/ttyACM0
+[STEER]	- servo driver on /dev/ttyUSB0
+[STEER] Starting motor setup
+[STEER -> MOTOR] {"T": 10032, "id": 1}
+[STEER] Motor 1 ok
+[STEER -> MOTOR] {"T": 11002, "id": 1}
+[STEER -> MOTOR] {"T": 10012, "id": 1, "mode": 2}
+[STEER -> MOTOR] {"T": 10032, "id": 2}
+[STEER] Motor 2 ok
+[STEER -> MOTOR] {"T": 11002, "id": 2}
+[STEER -> MOTOR] {"T": 10012, "id": 2, "mode": 2}
+[STEER -> MOTOR] {"T": 10032, "id": 3}
+[STEER] Motor 3 ok
+[STEER -> MOTOR] {"T": 11002, "id": 3}
+[STEER -> MOTOR] {"T": 10012, "id": 3, "mode": 2}
+[STEER -> MOTOR] {"T": 10032, "id": 4}
+[STEER] Motor 4 ok
+[STEER -> MOTOR] {"T": 11002, "id": 4}
+[STEER -> MOTOR] {"T": 10012, "id": 4, "mode": 2}
+[STEER] Finished motor setup
+[STEER] Starting servo setup
+[STEER] Finished servo setup
+[MAIN] Setup threads finished successfully
+[STEER] writeSerialServo worker started
+[STEER] writeSerialMotor worker started
+[STEER -> MOTOR] {"T": 11001, "time": "-1"}
+[STEER] readSerialMotor worker started
+[STEER] readSerialServo worker started
+[STEER -> MOTOR] {"T": 10010, "id": 1, "cmd": 0, "act": 3}
+[MOTOR READ ERR] device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[WRITER] File writer worker started
+[WRITER] File writer worker started
+[STEER -> MOTOR] {"T": 10010, "id": 4, "cmd": 0, "act": 3}
+[STEER <- MOTOR] {"T":20010,"id":1,"typ":400,"spd":0,"crt":1,"act":3,"tep":29,"err":0}
+[STEER -> MOTOR] {"T": 10010, "id": 3, "cmd": 0, "act": 3}
+[STEER <- MOTOR] {"T":20010,"id":4,"typ":400,"spd":0,"crt":23,"act":3,"tep":28,"err":0}
+[STEER -> MOTOR] {"T": 10010, "id": 2, "cmd": 0, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":3,"typ":400,"spd":0,"crt":-9,"act":3,"tep":28,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":2,"typ":400,"spd":0,"crt":10,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+Front Right
+[STEER -> MOTOR] {"T": 10010, "id": 1, "cmd": 500, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 4, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 3, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 2, "cmd": 0, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":1,"typ":400,"spd":0,"crt":2,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":4,"typ":400,"spd":0,"crt":4,"act":3,"tep":28,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":3,"typ":400,"spd":0,"crt":1,"act":3,"tep":28,"err":0}
+[STEER <- MOTOR] {"T":20010,"id":2,"typ":400,"spd":0,"crt":15,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+Rear Right
+[STEER -> MOTOR] {"T": 10010, "id": 1, "cmd": 0, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER -> MOTOR] {"T": 10010, "id": 4, "cmd": 500, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 3, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 2, "cmd": 0, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":1,"typ":400,"spd":497,"crt":370,"act":3,"tep":29,"err":0}
+[STEER <- MOTOR] {"T":20010,"id":4,"typ":400,"spd":0,"crt":23,"act":3,"tep":28,"err":0}
+[STEER <- MOTOR] {"T":20010,"id":3,"typ":400,"spd":0,"crt":-9,"act":3,"tep":28,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":2,"typ":400,"spd":0,"crt":8,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER] readSerial operating at 12.6Hz
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER] readSerialMotor operating at 0.3Hz
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+Rear Left
+[STEER -> MOTOR] {"T": 10010, "id": 1, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 4, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 3, "cmd": 500, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 2, "cmd": 0, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":1,"typ":400,"spd":0,"crt":-292,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":4,"typ":400,"spd":492,"crt":816,"act":3,"tep":28,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":3,"typ":400,"spd":0,"crt":41,"act":3,"tep":28,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":2,"typ":400,"spd":0,"crt":-19,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+Front Left
+[STEER -> MOTOR] {"T": 10010, "id": 1, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 4, "cmd": 0, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER -> MOTOR] {"T": 10010, "id": 3, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 2, "cmd": 500, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":1,"typ":400,"spd":0,"crt":-275,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":4,"typ":400,"spd":0,"crt":-263,"act":3,"tep":28,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":3,"typ":400,"spd":497,"crt":469,"act":3,"tep":28,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":2,"typ":400,"spd":0,"crt":10,"act":3,"tep":29,"err":0}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER] readSerial operating at 13.5Hz
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER] readSerialMotor operating at 0.2Hz
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- SERVO] FBK-0.26;0.18
+Finish
+[STEER -> MOTOR] {"T": 10010, "id": 1, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 4, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 3, "cmd": 0, "act": 3}
+[STEER -> MOTOR] {"T": 10010, "id": 2, "cmd": 0, "act": 3}
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER] requested thread close
+[WRITER] File writer worker closing
+[WRITER] File writer worker closing
+[STEER <- SERVO] FBK-0.26;0.18
+[STEER <- MOTOR] {"T":20010,"id":1,"typ":400,"spd":0,"crt":-224,"act":3,"tep":29,"err":0}

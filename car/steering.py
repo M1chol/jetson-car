@@ -9,14 +9,18 @@ from car.gamepad import Gamepad
 
 
 class Steering:
-    def __init__(self, config, debug: bool = False, *, VIRTUAL_GAMEPAD = None) -> None:
+    def __init__(self, config, debug: bool = False, *, VIRTUAL_GAMEPAD=None) -> None:
         self.__serialServo = None
         self.__serialMotor = None
         self.stopEvent = threading.Event()
         self.__config = config
         self.__fileWriterMotor = None
         self.__fileWriterServo = None
-        self.__gamepad = Gamepad(self.stopEvent, config, debug) if not VIRTUAL_GAMEPAD else VIRTUAL_GAMEPAD
+        self.__gamepad = (
+            Gamepad(self.stopEvent, config, debug)
+            if not VIRTUAL_GAMEPAD
+            else VIRTUAL_GAMEPAD
+        )
         self.DEBUG = debug
         self.DEBUG_CONTROLLER = False
         self.STEER_MANUAL = False
@@ -74,7 +78,9 @@ class Steering:
                 print(f"[STEER] Motor {i + 1} failed to respond")
                 return False
             # Enable motor
-            self.__writeMotor(self.__generateMotorCommand("CMD_CHANGE_Enable", id=i + 1))
+            self.__writeMotor(
+                self.__generateMotorCommand("CMD_CHANGE_Enable", id=i + 1)
+            )
             self.__serialMotor.readline()
             # Change mode default mode
             self.__writeMotor(
@@ -118,21 +124,25 @@ class Steering:
         self.__fileWriterServo = fileWriterServoFuture.result()
         return self
 
-    def __setMotors(self, FR : float, RR : float, RL : float, FL : float) -> None:
+    def __setMotors(self, FR: int, RR: int, RL: int, FL: int) -> None:
         sleepTime = 0.01
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=1, cmd=FR))        
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=1, cmd=FR))
         sleep(sleepTime)
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=2, cmd=RR))        
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=4, cmd=RR))
         sleep(sleepTime)
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=3, cmd=RL))        
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=3, cmd=RL))
         sleep(sleepTime)
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=4, cmd=FL))        
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=2, cmd=FL))
         sleep(sleepTime)
 
     def __writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
         # Set heartbeat
-        self.__writeMotor(self.__generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
+        self.__writeMotor(
+            self.__generateMotorCommand(
+                "CMD_HEARTBEAT_TIME", time=str(self.__config["MOTOR_HEARTBEAT_TIME"])
+            )
+        )
         self.__serialMotor.readline().decode("utf-8").strip()
         if self.__config["STEER_WITH_DIFFERENTIAL"]:
             pass
@@ -140,7 +150,10 @@ class Steering:
             while not self.stopEvent.is_set():
                 if self.STEER_MANUAL:
                     continue
-                values = [int(round(self.__gamepad.currentSpeed)) * direction for direction in self.__config["MOTOR_INVERT"]]
+                values = [
+                    int(round(self.__gamepad.currentSpeed)) * direction
+                    for direction in self.__config["MOTOR_INVERT"]
+                ]
                 self.__setMotors(*values)
 
     def __writeSerialServo(self) -> None:
@@ -196,7 +209,11 @@ class Steering:
                 if not msg:
                     continue
                 self.__fileWriterServo.write(
-                    str(time.monotonic()) + ";" + msg + ";" + str(self.__gamepad.currentAngle)
+                    str(time.monotonic())
+                    + ";"
+                    + msg
+                    + ";"
+                    + str(self.__gamepad.currentAngle)
                 )
                 if self.DEBUG:
                     print(f"[STEER <- SERVO] {msg}")
@@ -232,6 +249,7 @@ class Steering:
 
     def getStatus(self):
         return self.stopEvent.is_set()
+
 
 if __name__ == "__main__":
     print("This file should not be run directly. Please run main.py")

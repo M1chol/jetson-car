@@ -19,7 +19,7 @@ with ThreadPoolExecutor() as executor:
     motor_file_handler_future = executor.submit(FileHandler("motor.txt").setup)
     servo_file_handler_future = executor.submit(FileHandler("servo.txt").setup)
     steering_future = executor.submit(
-        Steering(config, debug=False, VIRTUAL_GAMEPAD=gamepad).setup,
+        Steering(config, debug=True, VIRTUAL_GAMEPAD=gamepad).setup,
         motor_file_handler_future,
         servo_file_handler_future,
     )
@@ -37,17 +37,23 @@ with ThreadPoolExecutor() as executor:
     steer.startWorker(executor)
     motor_file_handler.startWorker(executor)
     servo_file_handler.startWorker(executor)
-    
+
+    print("Make sure hearbeat is not set")
     steer.STEER_MANUAL = True
 
-    steer.__setMotors(500, 0, 0, 0)
+    sleep(2)
+    # Bypasing private method as it is a test code not meant to be run normally
+    print("Front Right")
+    steer._Steering__setMotors(500, 0, 0, 0)
     sleep(5)
-    steer.__setMotors(0, 500, 0, 0)
+    print("Rear Right")
+    steer._Steering__setMotors(0, 500, 0, 0)
     sleep(5)
-    steer.__setMotors(0, 0, 500, 0)
+    print("Rear Left")
+    steer._Steering__setMotors(0, 0, 500, 0)
     sleep(5)
-    steer.__setMotors(0, 0, 0, 500)
-    
+    print("Front Left")
+    steer._Steering__setMotors(0, 0, 0, 500)
     sleep(5)
     print("Finish")
     steer.stop()
