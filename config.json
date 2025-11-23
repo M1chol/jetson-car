@@ -9,7 +9,8 @@
   "SERVO_PID": 60000,
   "MOTOR_VID": 6790,
   "MOTOR_PID": 21971,
-  "MOTOR_INVERT": [1, -1, -1, 1],
+  "MOTOR_INVERT": [1, 1, -1, -1],
+  "MOTOR_IDS_MAP": [1, 4, 3, 2],
   "MOTOR_DEFAULT_MODE": "SPEED_LOOP",
   "MOTOR_HEARTBEAT_TIME": -1,
   "MOTOR_MODES": {
@@ -18,7 +19,9 @@
     "SPEED_LOOP": 2,
     "POSITION_LOOP": 3
   },
-  "STEER_WITH_DIFFERENTIAL": false,
+  "DIFF_ENABLED": true,
+  "DIFF_LENGTH": 0.3,
+  "DIFF_WIDTH": 0.2,
   "command_map": {
       "CMD_CHANGE_Enable": {"T": 11002, "id": 1},
       "CMD_CHANGE_Disable": {"T": 11003, "id": 1},

@@ -5,6 +5,8 @@ import serial.tools.list_ports
 import json
 from time import sleep
 import time
+import math
+
 from car.gamepad import Gamepad
 
 
@@ -23,7 +25,8 @@ class Steering:
         )
         self.DEBUG = debug
         self.DEBUG_CONTROLLER = False
-        self.STEER_MANUAL = False
+        self._STEER_MANUAL = False
+        """Setting this flag pauses motorWriter loop"""
 
     def __openSerial(self) -> str:
         servoPort = None
@@ -124,16 +127,25 @@ class Steering:
         self.__fileWriterServo = fileWriterServoFuture.result()
         return self
 
-    def __setMotors(self, FR: int, RR: int, RL: int, FL: int) -> None:
-        sleepTime = 0.01
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=1, cmd=FR))
-        sleep(sleepTime)
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=4, cmd=RR))
-        sleep(sleepTime)
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=3, cmd=RL))
-        sleep(sleepTime)
-        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=2, cmd=FL))
-        sleep(sleepTime)
+    
+    def __setMotors(self, vals) -> None:
+        """Set motor values [FR, RR, RL, FL]"""
+        for i in range(4):    
+            self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=self.__config["MOTOR_IDS_MAP"][i], cmd=vals[i]))
+            sleep(0.01)
+
+    def __getDiferentialforWheels(self, angle : float, speed: float):
+        if angle == 0 or not self.__config["DIFF_ENABLED"]:
+            return 1
+        delta = math.radians(angle)
+        Rc = self.__config["DIFF_LENGTH"] / (2 * math.tan(delta))
+        Rin = Rc - self.__config["DIFF_WIDTH"] / 2
+        Rout = Rc + self.__config["DIFF_WIDTH"] / 2
+        k_in = Rin / Rc
+        k_out = Rout / Rc
+        if angle > 0:
+            return [k_in, k_in, k_out, k_out]
+        return [k_out, k_out, k_in, k_in]
 
     def __writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
@@ -144,17 +156,17 @@ class Steering:
             )
         )
         self.__serialMotor.readline().decode("utf-8").strip()
-        if self.__config["STEER_WITH_DIFFERENTIAL"]:
-            pass
-        else:
-            while not self.stopEvent.is_set():
-                if self.STEER_MANUAL:
-                    continue
-                values = [
-                    int(round(self.__gamepad.currentSpeed)) * direction
-                    for direction in self.__config["MOTOR_INVERT"]
-                ]
-                self.__setMotors(*values)
+        while not self.stopEvent.is_set():
+            if self.STEER_MANUAL:
+                continue
+            speed = self.__gamepad.currentSpeed
+            angle = self.__gamepad.currentAngle
+            diff = self.__getDiferentialforWheels(angle, speed)
+            values = [
+                int(round(speed)) * self.__config["MOTOR_INVERT"][idx] * self.diff[idx]
+                for idx in range(4)
+            ]
+            self.__setMotors(values)
 
     def __writeSerialServo(self) -> None:
         print("[STEER] writeSerialServo worker started")

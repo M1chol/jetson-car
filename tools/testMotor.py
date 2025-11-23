@@ -39,7 +39,7 @@ with ThreadPoolExecutor() as executor:
     servo_file_handler.startWorker(executor)
 
     print("Make sure hearbeat is not set")
-    steer.STEER_MANUAL = True
+    steer._STEER_MANUAL = True
 
     sleep(2)
     # Bypasing private method as it is a test code not meant to be run normally
