@@ -117,19 +117,25 @@ class Steering:
         self.__fileWriterServo = fileWriterServoFuture.result()
         return self
 
+    def __setMotors(self, FR : float, RR : float, RL : float, FL : float) -> None:
+        sleepTime = 0.01
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=1, cmd=FR))        
+        sleep(sleepTime)
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=2, cmd=RR))        
+        sleep(sleepTime)
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=3, cmd=RL))        
+        sleep(sleepTime)
+        self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=4, cmd=FL))        
+        sleep(sleepTime)
+
     def __writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
         # Set heartbeat
         self.__writeMotor(self.__generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
         self.__serialMotor.readline().decode("utf-8").strip()
         while not self.stopEvent.is_set():
-            value = int(round(self.__gamepad.currentSpeed))
-            for i in range(4):
-                cmd_val = value * self.__config["MOTOR_INVERT"][i]
-                self.__writeMotor(
-                    self.__generateMotorCommand("CMD_DDSM_CTRL", id=i + 1, cmd=cmd_val)
-                )
-                sleep(0.01)
+            values = [int(round(self.__gamepad.currentSpeed)) * direction for direction in self.__config["MOTOR_INVERT"]]
+            self.__setMotors(*values)
 
     def __writeSerialServo(self) -> None:
         print("[STEER] writeSerialServo worker started")
