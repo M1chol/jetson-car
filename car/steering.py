@@ -193,7 +193,7 @@ class Steering:
                 if not msg:
                     continue
                 self.__fileWriterServo.write(
-                    str(time.monotonic()) + ";" + msg + ";" + str(self._currentAngle)
+                    str(time.monotonic()) + ";" + msg + ";" + str(self.__gamepad.currentAngle)
                 )
                 if self.DEBUG:
                     print(f"[STEER <- SERVO] {msg}")
