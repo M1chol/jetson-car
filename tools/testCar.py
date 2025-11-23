@@ -40,8 +40,8 @@ with ThreadPoolExecutor() as executor:
 
     sleep(2)
     print("Speed 200")
-    gamepad.currentSpeed = 500
-    sleep(2)
+    gamepad.currentSpeed = 200
+    sleep(5)
     print("Speed 0")
     gamepad.currentSpeed = 0
     sleep(2)
@@ -55,8 +55,8 @@ with ThreadPoolExecutor() as executor:
     gamepad.currentAngle = 0
     sleep(2)
     print("Speed -200")
-    gamepad.currentSpeed = -500
-    sleep(2)
+    gamepad.currentSpeed = -200
+    sleep(5)
     print("Speed 0")
     gamepad.currentSpeed = 0
     print("Finish")
