@@ -35,17 +35,6 @@ void loop() {
     String command = Serial.readStringUntil('\n');
     command.trim();
 
-    if (!sendFeedback && command.startsWith("BEG")) {
-      String val = command.substring(PREFIX_LENGTH);
-      unsigned long interval = val.toInt();
-      if (interval > 0) {
-        FEEDBACK_INTERVAL = interval;
-        sendFeedback = true;
-        Serial.print("ACK");
-        Serial.println(FEEDBACK_INTERVAL);
-      }
-    }
-
     if (command.startsWith("CMD")) {
       String args = command.substring(PREFIX_LENGTH);
       int idx = args.indexOf(';');
@@ -63,6 +52,25 @@ void loop() {
         Serial.print(';');
         Serial.println(servoId2Angle);
       }
+    }
+    else if (!sendFeedback && command.startsWith("BEG")) {
+      String val = command.substring(PREFIX_LENGTH);
+      unsigned long interval = val.toInt();
+      if (interval > 0) {
+        FEEDBACK_INTERVAL = interval;
+        sendFeedback = true;
+        Serial.print("ACK BEG");
+        Serial.println(FEEDBACK_INTERVAL);
+      }
+    }
+    else if (command.startsWith("CAL")) {
+      st.CalibrationOfs(1);
+      st.CalibrationOfs(2);
+      Serial.println("ACK CAL")
+    }
+    else if (command.startsWith("STP")) {
+        sendFeedback = false;
+        Serial.print("ACK STP");
     }
   }
 
