@@ -22,7 +22,7 @@ class Steering:
         self.MAX_ANGLE = self._config["MAX_ANGLE"]
         self.MAX_SPEED = self._config["MAX_SPEED"]
 
-    def openSerial(self) -> str:
+    def __openSerial(self) -> str:
         servoPort = None
         motorPort = None
         ports = serial.tools.list_ports.comports()
@@ -57,29 +57,29 @@ class Steering:
         )
         return True
 
-    def writeMotor(self, command: str) -> None:
+    def __writeMotor(self, command: str) -> None:
         if self.DEBUG:
             print(f"[STEER -> MOTOR] {command}")
         self._serialMotor.write(command.encode() + b"\n")
 
-    def _motorSetup(self) -> bool:
+    def __motorSetup(self) -> bool:
         print("[STEER] Starting motor setup")
         self._serialMotor.reset_input_buffer()
         self._serialMotor.reset_output_buffer()
         for i in range(4):
             # Check motor status
-            self.writeMotor(self.generateMotorCommand("CMD_DDSM_INFO", id=i + 1))
+            self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_INFO", id=i + 1))
             if self._serialMotor.readline():
                 print(f"[STEER] Motor {i + 1} ok")
             else:
                 print(f"[STEER] Motor {i + 1} failed to respond")
                 return False
             # Enable motor
-            self.writeMotor(self.generateMotorCommand("CMD_CHANGE_Enable", id=i + 1))
+            self.__writeMotor(self.__generateMotorCommand("CMD_CHANGE_Enable", id=i + 1))
             self._serialMotor.readline()
             # Change mode default mode
-            self.writeMotor(
-                self.generateMotorCommand(
+            self.__writeMotor(
+                self.__generateMotorCommand(
                     "CMD_CHANGE_MODE",
                     id=i + 1,
                     mode=self._config["MOTOR_MODES"][
@@ -91,7 +91,7 @@ class Steering:
         print("[STEER] Finished motor setup")
         return True
 
-    def _servoSetup(self) -> bool:
+    def __servoSetup(self) -> bool:
         print("[STEER] Starting servo setup")
         self._serialServo.reset_input_buffer()
         self._serialServo.reset_output_buffer()
@@ -106,32 +106,32 @@ class Steering:
     def setup(self, fileWriterMotorFuture, fileWriterServoFuture):
         if not self._gamepad.getGamePad():
             return None
-        if not self.openSerial():
+        if not self.__openSerial():
             return None
-        if not self._motorSetup():
+        if not self.__motorSetup():
             return None
-        if not self._servoSetup():
+        if not self.__servoSetup():
             return None
         wait([fileWriterMotorFuture, fileWriterServoFuture])
         self._fileWriterMotor = fileWriterMotorFuture.result()
         self._fileWriterServo = fileWriterServoFuture.result()
         return self
 
-    def writeSerialMotor(self) -> None:
+    def __writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
         # Set heartbeat
-        self.writeMotor(self.generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
+        self.__writeMotor(self.__generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
         self._serialMotor.readline().decode("utf-8").strip()
         while not self._stopEvent.is_set():
             value = int(round(self._gamepad.currentSpeed))
             for i in range(4):
                 cmd_val = value * self._config["MOTOR_INVERT"][i]
-                self.writeMotor(
-                    self.generateMotorCommand("CMD_DDSM_CTRL", id=i + 1, cmd=cmd_val)
+                self.__writeMotor(
+                    self.__generateMotorCommand("CMD_DDSM_CTRL", id=i + 1, cmd=cmd_val)
                 )
                 sleep(0.01)
 
-    def writeSerialServo(self) -> None:
+    def __writeSerialServo(self) -> None:
         print("[STEER] writeSerialServo worker started")
         lastAngle = self._gamepad.currentAngle
         while not self._stopEvent.is_set():
@@ -141,7 +141,7 @@ class Steering:
             lastAngle = self._gamepad.currentAngle
             sleep(0.1)
 
-    def readSerialMotor(self) -> None:
+    def __readSerialMotor(self) -> None:
         print("[STEER] readSerialMotor worker started")
         count = 0
         timer = time.monotonic()
@@ -166,7 +166,7 @@ class Steering:
                 if self.DEBUG:
                     print(f"[MOTOR READ ERR] {e}")
 
-    def readSerialServo(self) -> None:
+    def __readSerialServo(self) -> None:
         print("[STEER] readSerialServo worker started")
         count = 0
         timer = time.monotonic()
@@ -194,10 +194,10 @@ class Steering:
                     print(f"[SERVO READ ERR] {e}")
 
     def startWorker(self, executor) -> None:
-        executor.submit(self.writeSerialServo)
-        executor.submit(self.writeSerialMotor)
-        executor.submit(self.readSerialMotor)
-        executor.submit(self.readSerialServo)
+        executor.submit(self.__writeSerialServo)
+        executor.submit(self.__writeSerialMotor)
+        executor.submit(self.__readSerialMotor)
+        executor.submit(self.__readSerialServo)
         executor.submit(self._gamepad.updateGamepad)
         if self.CONTROLLER:
             executor.submit(self._gamepad.printData)
@@ -205,12 +205,12 @@ class Steering:
     def stop(self) -> None:
         command = "CMD90;90"
         for i in range(4):
-            self.generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
+            self.__generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
             self._serialMotor.write(command.encode() + b"\n")
         self._stopEvent.set()
         print("[STEER] requested thread close")
 
-    def generateMotorCommand(self, cmd_name: str, **kwargs) -> str:
+    def __generateMotorCommand(self, cmd_name: str, **kwargs) -> str:
         if cmd_name not in self._config["command_map"]:
             raise ValueError(f"Unknown command: {cmd_name}")
         command = self._config["command_map"][cmd_name].copy()
@@ -219,7 +219,6 @@ class Steering:
 
     def getStatus(self):
         return self._stopEvent.is_set()
-
 
 if __name__ == "__main__":
     print("This file should not be run directly. Please run main.py")

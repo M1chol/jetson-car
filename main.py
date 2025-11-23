@@ -50,7 +50,7 @@ with ThreadPoolExecutor() as executor:
 
     print("[MAIN] Steering requested quit, closing threads")
 
-    steering.stop()
+    steering.__stop()
     motor_file_handler.stop()
     servo_file_handler.stop()
 
