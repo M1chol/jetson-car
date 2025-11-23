@@ -37,6 +37,8 @@ with ThreadPoolExecutor() as executor:
     steer.startWorker(executor)
     motor_file_handler.startWorker(executor)
     servo_file_handler.startWorker(executor)
+    
+    steer.STEER_MANUAL = True
 
     steer.__setMotors(500, 0, 0, 0)
     sleep(5)

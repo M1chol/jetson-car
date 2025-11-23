@@ -19,6 +19,7 @@ class Steering:
         self.__gamepad = Gamepad(self.stopEvent, config, debug) if not VIRTUAL_GAMEPAD else VIRTUAL_GAMEPAD
         self.DEBUG = debug
         self.DEBUG_CONTROLLER = False
+        self.STEER_MANUAL = False
 
     def __openSerial(self) -> str:
         servoPort = None
@@ -137,6 +138,8 @@ class Steering:
             pass
         else:
             while not self.stopEvent.is_set():
+                if self.STEER_MANUAL:
+                    continue
                 values = [int(round(self.__gamepad.currentSpeed)) * direction for direction in self.__config["MOTOR_INVERT"]]
                 self.__setMotors(*values)
 
