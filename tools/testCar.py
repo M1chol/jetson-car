@@ -28,6 +28,12 @@ with ThreadPoolExecutor() as executor:
     servo_file_handler = servo_file_handler_future.result()
     steer = steering_future.result()
 
+    if all([steer, motor_file_handler, servo_file_handler]):
+        print("[MAIN] Setup threads finished successfully")
+    else:
+        print("[MAIN] Setup failed, quiting")
+        quit()
+
     steer.startWorker(executor)
     motor_file_handler.startWorker(executor)
     servo_file_handler.startWorker(executor)
