@@ -1,6 +1,8 @@
 from car.steering import Steering
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from car.virtual_gamepad import VirtualGamepad
+from car.fileHandler import FileHandler
+from threading import Event
 from time import sleep
 import json
 
@@ -10,13 +12,20 @@ with open("config.json") as file:
         print("Config file failed to load")
         quit()
 
-
-gamepad = VirtualGamepad(config=config, debug=False)
-
-steer = Steering(config=config, debug=False, VIRTUAL_GAMEPAD=gamepad)
-steer.setup()
+event = Event()
+gamepad = VirtualGamepad(carStopEvent=event, config=config, debug=False)
 
 with ThreadPoolExecutor as executor:
+    
+    motor_file_handler_future = executor.submit(FileHandler("motor.txt").setup)
+    servo_file_handler_future = executor.submit(FileHandler("servo.txt").setup)
+    steering_future = executor.submit(
+        Steering(config, debug=False).setup, motor_file_handler_future, servo_file_handler_future
+    )
+    wait([steering_future])
+
+    steer = steering_future.result()
+
     steer.startWorker(executor)
 
     sleep(2)
