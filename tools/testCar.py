@@ -24,10 +24,13 @@ with ThreadPoolExecutor() as executor:
         servo_file_handler_future,
     )
     wait([steering_future])
-
+    motor_file_handler = motor_file_handler_future.result()
+    servo_file_handler = servo_file_handler_future.result()
     steer = steering_future.result()
 
     steer.startWorker(executor)
+    motor_file_handler.startWorker(executor)
+    servo_file_handler.startWorker(executor)
 
     sleep(2)
     print("Speed 200")
@@ -53,3 +56,5 @@ with ThreadPoolExecutor() as executor:
     print("Finish")
     sleep(2)
     steer.stop()
+    motor_file_handler.stop()
+    servo_file_handler.stop()
