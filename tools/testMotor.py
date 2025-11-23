@@ -15,12 +15,13 @@ with open("config.json") as file:
 event = Event()
 gamepad = VirtualGamepad(carStopEvent=event, config=config, debug=False)
 
-with ThreadPoolExecutor as executor:
-    
+with ThreadPoolExecutor() as executor:
     motor_file_handler_future = executor.submit(FileHandler("motor.txt").setup)
     servo_file_handler_future = executor.submit(FileHandler("servo.txt").setup)
     steering_future = executor.submit(
-        Steering(config, debug=False).setup, motor_file_handler_future, servo_file_handler_future
+        Steering(config, debug=False, VIRTUAL_GAMEPAD=gamepad).setup,
+        motor_file_handler_future,
+        servo_file_handler_future,
     )
     wait([steering_future])
 
@@ -29,16 +30,26 @@ with ThreadPoolExecutor as executor:
     steer.startWorker(executor)
 
     sleep(2)
-    gamepad.currentGas = 200
+    print("Speed 200")
+    gamepad.currentSpeed = 500
     sleep(2)
-    gamepad.currentGas = 0
+    print("Speed 0")
+    gamepad.currentSpeed = 0
     sleep(2)
+    print("Angle 45")
     gamepad.currentAngle = 45
     sleep(2)
+    print("Angle -45")
     gamepad.currentAngle = -45
     sleep(2)
+    print("Angle 0")
     gamepad.currentAngle = 0
     sleep(2)
-    gamepad.currentBreak = 200
+    print("Speed -200")
+    gamepad.currentSpeed = -500
     sleep(2)
-    gamepad.currentBreak = 0
+    print("Speed 0")
+    gamepad.currentSpeed = 0
+    print("Finish")
+    sleep(2)
+    steer.stop()
