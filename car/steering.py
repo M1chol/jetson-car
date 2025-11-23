@@ -133,9 +133,12 @@ class Steering:
         # Set heartbeat
         self.__writeMotor(self.__generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
         self.__serialMotor.readline().decode("utf-8").strip()
-        while not self.stopEvent.is_set():
-            values = [int(round(self.__gamepad.currentSpeed)) * direction for direction in self.__config["MOTOR_INVERT"]]
-            self.__setMotors(*values)
+        if self.__config["STEER_WITH_DIFFERENTIAL"]:
+            pass
+        else:
+            while not self.stopEvent.is_set():
+                values = [int(round(self.__gamepad.currentSpeed)) * direction for direction in self.__config["MOTOR_INVERT"]]
+                self.__setMotors(*values)
 
     def __writeSerialServo(self) -> None:
         print("[STEER] writeSerialServo worker started")
@@ -210,6 +213,7 @@ class Steering:
 
     def stop(self) -> None:
         command = "CMD90;90"
+        self.__setMotors(0, 0, 0, 0)
         for i in range(4):
             self.__generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
             self.__serialMotor.write(command.encode() + b"\n")
