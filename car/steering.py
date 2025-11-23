@@ -9,18 +9,16 @@ from car.gamepad import Gamepad
 
 
 class Steering:
-    def __init__(self, config, debug: bool = False) -> None:
-        self._serialServo = None
-        self._serialMotor = None
-        self._stopEvent = threading.Event()
-        self._config = config
-        self._fileWriterMotor = None
-        self._fileWriterServo = None
-        self._gamepad = Gamepad(self._stopEvent, config, debug)
+    def __init__(self, config, debug: bool = False, *, VIRTUAL_GAMEPAD = None) -> None:
+        self.__serialServo = None
+        self.__serialMotor = None
+        self.stopEvent = threading.Event()
+        self.__config = config
+        self.__fileWriterMotor = None
+        self.__fileWriterServo = None
+        self.__gamepad = Gamepad(self.stopEvent, config, debug) if not VIRTUAL_GAMEPAD else VIRTUAL_GAMEPAD
         self.DEBUG = debug
-        self.CONTROLLER = False
-        self.MAX_ANGLE = self._config["MAX_ANGLE"]
-        self.MAX_SPEED = self._config["MAX_SPEED"]
+        self.DEBUG_CONTROLLER = False
 
     def __openSerial(self) -> str:
         servoPort = None
@@ -28,13 +26,13 @@ class Steering:
         ports = serial.tools.list_ports.comports()
         for _port in ports:
             if (
-                _port.vid == self._config["SERVO_VID"]
-                and _port.pid == self._config["SERVO_PID"]
+                _port.vid == self.__config["SERVO_VID"]
+                and _port.pid == self.__config["SERVO_PID"]
             ):
                 servoPort = _port.device
             elif (
-                _port.vid == self._config["MOTOR_VID"]
-                and _port.pid == self._config["MOTOR_PID"]
+                _port.vid == self.__config["MOTOR_VID"]
+                and _port.pid == self.__config["MOTOR_PID"]
             ):
                 motorPort = _port.device
         if not all([servoPort, motorPort]):
@@ -42,16 +40,16 @@ class Steering:
                 f"[STEER] failed to find some hardware{' (motor driver)' if not motorPort else ''}{' (servo driver)' if not servoPort else ''}"
             )
             return False
-        self._serialServo = serial.Serial(
+        self.__serialServo = serial.Serial(
             servoPort, baudrate=115200, timeout=1, dsrdtr=False, rtscts=False
         )
-        self._serialMotor = serial.Serial(
+        self.__serialMotor = serial.Serial(
             motorPort, baudrate=115200, timeout=1, dsrdtr=False, rtscts=False
         )
-        self._serialServo.setRTS(False)
-        self._serialServo.setDTR(False)
-        self._serialMotor.setRTS(False)
-        self._serialMotor.setDTR(False)
+        self.__serialServo.setRTS(False)
+        self.__serialServo.setDTR(False)
+        self.__serialMotor.setRTS(False)
+        self.__serialMotor.setDTR(False)
         print(
             f"[STEER] Serial connected\n[STEER]\t- motor driver on {motorPort}\n[STEER]\t- servo driver on {servoPort}"
         )
@@ -60,51 +58,53 @@ class Steering:
     def __writeMotor(self, command: str) -> None:
         if self.DEBUG:
             print(f"[STEER -> MOTOR] {command}")
-        self._serialMotor.write(command.encode() + b"\n")
+        self.__serialMotor.write(command.encode() + b"\n")
 
     def __motorSetup(self) -> bool:
         print("[STEER] Starting motor setup")
-        self._serialMotor.reset_input_buffer()
-        self._serialMotor.reset_output_buffer()
+        self.__serialMotor.reset_input_buffer()
+        self.__serialMotor.reset_output_buffer()
         for i in range(4):
             # Check motor status
             self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_INFO", id=i + 1))
-            if self._serialMotor.readline():
+            if self.__serialMotor.readline():
                 print(f"[STEER] Motor {i + 1} ok")
             else:
                 print(f"[STEER] Motor {i + 1} failed to respond")
                 return False
             # Enable motor
             self.__writeMotor(self.__generateMotorCommand("CMD_CHANGE_Enable", id=i + 1))
-            self._serialMotor.readline()
+            self.__serialMotor.readline()
             # Change mode default mode
             self.__writeMotor(
                 self.__generateMotorCommand(
                     "CMD_CHANGE_MODE",
                     id=i + 1,
-                    mode=self._config["MOTOR_MODES"][
-                        self._config["MOTOR_DEFAULT_MODE"]
+                    mode=self.__config["MOTOR_MODES"][
+                        self.__config["MOTOR_DEFAULT_MODE"]
                     ],
                 )
             )
-            self._serialMotor.readline()
+            self.__serialMotor.readline()
         print("[STEER] Finished motor setup")
         return True
 
     def __servoSetup(self) -> bool:
         print("[STEER] Starting servo setup")
-        self._serialServo.reset_input_buffer()
-        self._serialServo.reset_output_buffer()
-        command = "BEG" + str(self._config["SERVO_FBK_FREQ_MS"])
-        self._serialServo.write(command.encode() + b"\n")
-        if not self._serialServo.readline():
+        self.__serialServo.reset_input_buffer()
+        self.__serialServo.reset_output_buffer()
+        command = "BEG" + str(self.__config["SERVO_FBK_FREQ_MS"])
+        self.__serialServo.write(command.encode() + b"\n")
+        if not self.__serialServo.readline():
             print("[STEER] Servo setup failed")
             return False
         print("[STEER] Finished servo setup")
         return True
 
     def setup(self, fileWriterMotorFuture, fileWriterServoFuture):
-        if not self._gamepad.getGamePad():
+        if not self.__gamepad:
+            return None
+        if not self.__gamepad.getGamePad():
             return None
         if not self.__openSerial():
             return None
@@ -113,19 +113,19 @@ class Steering:
         if not self.__servoSetup():
             return None
         wait([fileWriterMotorFuture, fileWriterServoFuture])
-        self._fileWriterMotor = fileWriterMotorFuture.result()
-        self._fileWriterServo = fileWriterServoFuture.result()
+        self.__fileWriterMotor = fileWriterMotorFuture.result()
+        self.__fileWriterServo = fileWriterServoFuture.result()
         return self
 
     def __writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
         # Set heartbeat
         self.__writeMotor(self.__generateMotorCommand("CMD_HEARTBEAT_TIME", time="600"))
-        self._serialMotor.readline().decode("utf-8").strip()
-        while not self._stopEvent.is_set():
-            value = int(round(self._gamepad.currentSpeed))
+        self.__serialMotor.readline().decode("utf-8").strip()
+        while not self.stopEvent.is_set():
+            value = int(round(self.__gamepad.currentSpeed))
             for i in range(4):
-                cmd_val = value * self._config["MOTOR_INVERT"][i]
+                cmd_val = value * self.__config["MOTOR_INVERT"][i]
                 self.__writeMotor(
                     self.__generateMotorCommand("CMD_DDSM_CTRL", id=i + 1, cmd=cmd_val)
                 )
@@ -133,32 +133,32 @@ class Steering:
 
     def __writeSerialServo(self) -> None:
         print("[STEER] writeSerialServo worker started")
-        lastAngle = self._gamepad.currentAngle
-        while not self._stopEvent.is_set():
-            if self._gamepad.currentAngle != lastAngle:
-                command = f"CMD{self._gamepad.currentAngle:.2f};{-self._gamepad.currentAngle:.2f}"
-                self._serialServo.write(command.encode() + b"\n")
-            lastAngle = self._gamepad.currentAngle
+        lastAngle = self.__gamepad.currentAngle
+        while not self.stopEvent.is_set():
+            if self.__gamepad.currentAngle != lastAngle:
+                command = f"CMD{self.__gamepad.currentAngle:.2f};{-self.__gamepad.currentAngle:.2f}"
+                self.__serialServo.write(command.encode() + b"\n")
+            lastAngle = self.__gamepad.currentAngle
             sleep(0.1)
 
     def __readSerialMotor(self) -> None:
         print("[STEER] readSerialMotor worker started")
         count = 0
         timer = time.monotonic()
-        while not self._stopEvent.is_set():
+        while not self.stopEvent.is_set():
             try:
                 if time.monotonic() - timer >= 10:
                     freq = count / 40
                     print(f"[STEER] readSerialMotor operating at {freq}Hz")
                     count = 0
                     timer = time.monotonic()
-                line = self._serialMotor.readline()
+                line = self.__serialMotor.readline()
                 if not line:
                     continue
                 msg = line.decode("utf-8", errors="ignore").strip()
                 if not msg:
                     continue
-                self._fileWriterMotor.write(str(time.monotonic()) + ";" + msg)
+                self.__fileWriterMotor.write(str(time.monotonic()) + ";" + msg)
                 if self.DEBUG:
                     print(f"[STEER <- MOTOR] {msg}")
                 count += 1
@@ -170,20 +170,20 @@ class Steering:
         print("[STEER] readSerialServo worker started")
         count = 0
         timer = time.monotonic()
-        while not self._stopEvent.is_set():
+        while not self.stopEvent.is_set():
             try:
                 if time.monotonic() - timer >= 10:
                     freq = count / 10
                     print(f"[STEER] readSerial operating at {freq}Hz")
                     count = 0
                     timer = time.monotonic()
-                line = self._serialServo.readline()
+                line = self.__serialServo.readline()
                 if not line:
                     continue
                 msg = line.decode("utf-8", errors="ignore").strip()
                 if not msg:
                     continue
-                self._fileWriterServo.write(
+                self.__fileWriterServo.write(
                     str(time.monotonic()) + ";" + msg + ";" + str(self._currentAngle)
                 )
                 if self.DEBUG:
@@ -198,27 +198,27 @@ class Steering:
         executor.submit(self.__writeSerialMotor)
         executor.submit(self.__readSerialMotor)
         executor.submit(self.__readSerialServo)
-        executor.submit(self._gamepad.updateGamepad)
-        if self.CONTROLLER:
-            executor.submit(self._gamepad.printData)
+        executor.submit(self.__gamepad.updateGamepad)
+        if self.DEBUG_CONTROLLER:
+            executor.submit(self.__gamepad.printData)
 
     def stop(self) -> None:
         command = "CMD90;90"
         for i in range(4):
             self.__generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
-            self._serialMotor.write(command.encode() + b"\n")
-        self._stopEvent.set()
+            self.__serialMotor.write(command.encode() + b"\n")
+        self.stopEvent.set()
         print("[STEER] requested thread close")
 
     def __generateMotorCommand(self, cmd_name: str, **kwargs) -> str:
-        if cmd_name not in self._config["command_map"]:
+        if cmd_name not in self.__config["command_map"]:
             raise ValueError(f"Unknown command: {cmd_name}")
-        command = self._config["command_map"][cmd_name].copy()
+        command = self.__config["command_map"][cmd_name].copy()
         command.update(kwargs)
         return json.dumps(command)
 
     def getStatus(self):
-        return self._stopEvent.is_set()
+        return self.stopEvent.is_set()
 
 if __name__ == "__main__":
     print("This file should not be run directly. Please run main.py")
