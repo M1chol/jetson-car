@@ -1,5 +1,4 @@
 .venv
 __pycache__
-motor.txt
-servo.txt
 debug.txt
+results/temp/*.txt

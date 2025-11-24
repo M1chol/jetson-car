@@ -6,8 +6,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-def start(*, persistRun = False, debug=False):
-    
+
+def start(*, persistRun=False, debug=False):
     config = None
 
     # Create folder if data should be saved
@@ -17,7 +17,6 @@ def start(*, persistRun = False, debug=False):
         folder = Path("results/temp")
 
     with ThreadPoolExecutor() as executor:
-        
         # Load config
         print("[CAR] Loading config file...")
         with open("car/config.json") as file:
@@ -25,12 +24,15 @@ def start(*, persistRun = False, debug=False):
             if not config:
                 print("[CAR] Config file failed to load")
                 quit()
-        
+
         # Run setup in pararel
         print("[CAR] Starting setup threads...")
-        file_handler_future = executor.submit(FileHandler(folder / "out.txt").setup)
+        file_handler_future = executor.submit(
+            FileHandler(folder / "out.txt", debug=debug).setup
+        )
         steering_future = executor.submit(
-            Steering(config, debug).setup, file_handler_future)
+            Steering(config, debug).setup, file_handler_future
+        )
 
         # steering setup already waits for servo and motor.
         wait([steering_future])
@@ -66,6 +68,7 @@ def start(*, persistRun = False, debug=False):
 
         print("[MAIN] All threads closed successfully, adios")
 
+
 def makeDatedFolder(base_path="."):
     folder_name = datetime.now().strftime("%Y-%m-%d")
     base = Path(base_path)
@@ -78,3 +81,4 @@ def makeDatedFolder(base_path="."):
 
     target.mkdir(parents=True)
     return target
+

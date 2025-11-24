@@ -194,9 +194,18 @@ class Steering:
                 msg = line.decode("utf-8", errors="ignore").strip()
                 if not msg:
                     continue
-                self.__fileWriter.write("MOTOR " + str(time.monotonic()) + " " + msg + " " + self.__gamepad.currentSpeed)
+                line = (
+                    "MOTOR "
+                    + str(time.monotonic())
+                    + " "
+                    + msg
+                    + " "
+                    + str(self.__gamepad.currentSpeed)
+                )
+                self.__fileWriter.write(line)
                 if self.DEBUG:
                     print(f"[STEER <- MOTOR] {msg}")
+                    print(f"[STEER -> WRITER] {line}")
                 count += 1
             except Exception as e:
                 if self.DEBUG:
@@ -219,16 +228,18 @@ class Steering:
                 msg = line.decode("utf-8", errors="ignore").strip()
                 if not msg:
                     continue
-                self.__fileWriter.write(
-                    "SERVO " 
+                line = (
+                    "SERVO "
                     + str(time.monotonic())
                     + " "
                     + msg
                     + " "
                     + str(self.__gamepad.currentAngle)
                 )
+                self.__fileWriter.write(line)
                 if self.DEBUG:
                     print(f"[STEER <- SERVO] {msg}")
+                    print(f"[STEER -> WRITER] {line}")
                 count += 1
             except Exception as e:
                 if self.DEBUG:
