@@ -12,15 +12,15 @@ def start(*, persistRun = False, debug=False):
 
     # Create folder if data should be saved
     if persistRun:
-        folder = makeDatedFolder("../resutls")
+        folder = makeDatedFolder("results")
     else:
-        folder = Path("../results/temp")
+        folder = Path("results/temp")
 
     with ThreadPoolExecutor() as executor:
         
         # Load config
         print("[CAR] Loading config file...")
-        with open("config.json") as file:
+        with open("car/config.json") as file:
             config = json.load(file)
             if not config:
                 print("[CAR] Config file failed to load")

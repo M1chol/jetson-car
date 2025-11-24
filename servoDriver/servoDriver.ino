@@ -66,7 +66,7 @@ void loop() {
     else if (command.startsWith("CAL")) {
       st.CalibrationOfs(1);
       st.CalibrationOfs(2);
-      Serial.println("ACK CAL")
+      Serial.println("ACK CAL");
     }
     else if (command.startsWith("STP")) {
         sendFeedback = false;
