@@ -16,8 +16,7 @@ class Steering:
         self.__serialMotor = None
         self.stopEvent = threading.Event()
         self.__config = config
-        self.__fileWriterMotor = None
-        self.__fileWriterServo = None
+        self.__fileWriter = None
         self.__gamepad = (
             Gamepad(self.stopEvent, config, debug)
             if not VIRTUAL_GAMEPAD
@@ -111,7 +110,7 @@ class Steering:
         print("[STEER] Finished servo setup")
         return True
 
-    def setup(self, fileWriterMotorFuture, fileWriterServoFuture):
+    def setup(self, fileWriterFuture):
         if not self.__gamepad:
             return None
         if not self.__gamepad.getGamePad():
@@ -122,9 +121,8 @@ class Steering:
             return None
         if not self.__servoSetup():
             return None
-        wait([fileWriterMotorFuture, fileWriterServoFuture])
-        self.__fileWriterMotor = fileWriterMotorFuture.result()
-        self.__fileWriterServo = fileWriterServoFuture.result()
+        wait([fileWriterFuture])
+        self.__fileWriter = fileWriterFuture.result()
         return self
 
     def __setMotors(self, vals) -> None:
@@ -196,7 +194,7 @@ class Steering:
                 msg = line.decode("utf-8", errors="ignore").strip()
                 if not msg:
                     continue
-                self.__fileWriterMotor.write(str(time.monotonic()) + ";" + msg)
+                self.__fileWriter.write("MOTOR " + str(time.monotonic()) + " " + msg + " " + self.__gamepad.currentSpeed)
                 if self.DEBUG:
                     print(f"[STEER <- MOTOR] {msg}")
                 count += 1
@@ -221,11 +219,12 @@ class Steering:
                 msg = line.decode("utf-8", errors="ignore").strip()
                 if not msg:
                     continue
-                self.__fileWriterServo.write(
-                    str(time.monotonic())
-                    + ";"
+                self.__fileWriter.write(
+                    "SERVO " 
+                    + str(time.monotonic())
+                    + " "
                     + msg
-                    + ";"
+                    + " "
                     + str(self.__gamepad.currentAngle)
                 )
                 if self.DEBUG:

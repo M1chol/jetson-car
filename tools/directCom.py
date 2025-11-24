@@ -61,6 +61,8 @@ def main():
 if __name__ == "__main__":
     print("[SERVO] Use CMD<val>;<val> to send angle")
     print("[SERVO] Use BEG to start feedback")
+    print("[SERVO] Use CAL to calibrate servos center position")
+    print("[SERVO] Use STP to stop feedback")
     print("[MOTOR] Use '>' symbol and provide command name to generate commands")
     pprint(command_map)
     main()

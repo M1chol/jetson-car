@@ -47,7 +47,7 @@ void loop() {
         st.RegWritePosEx(SERVO_ID_2, calculateAngle(servoId2Angle), 3400, 50);
         st.RegWriteAction();
 
-        Serial.print("ACK");
+        Serial.print("ACK;");
         Serial.print(servoId1Angle);
         Serial.print(';');
         Serial.println(servoId2Angle);
@@ -92,7 +92,7 @@ void loop() {
       float angle1 = (pos1 - CENTER_POSITION) / DEG_TO_UNITS;
       float angle2 = (pos2 - CENTER_POSITION) / DEG_TO_UNITS;
 
-      Serial.print("FBK");
+      Serial.print("FBK;");
       Serial.print(angle1, 2);
       Serial.print(";");
       Serial.println(angle2, 2);
