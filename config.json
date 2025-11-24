@@ -1,17 +1,17 @@
 {
-  "MAX_ANGLE": 45,
+  "MAX_ANGLE": 35,
   "SERVO_FBK_FREQ_MS": 40,
   "PAD_READ_TURN": 32768,
   "PAD_READ_SPEED": 1023,
   "PAD_TIMEOUT": 30,
-  "MAX_SPEED": 1000,
+  "MAX_SPEED": 10000,
   "SERVO_VID": 4292,
   "SERVO_PID": 60000,
   "MOTOR_VID": 6790,
   "MOTOR_PID": 21971,
-  "MOTOR_INVERT": [1, 1, -1, -1],
+  "MOTOR_INVERT": [-1, -1, 1, 1],
   "MOTOR_IDS_MAP": [1, 4, 3, 2],
-  "MOTOR_DEFAULT_MODE": "SPEED_LOOP",
+  "MOTOR_DEFAULT_MODE": "OPEN_LOOP",
   "MOTOR_HEARTBEAT_TIME": -1,
   "MOTOR_MODES": {
     "OPEN_LOOP": 0,
@@ -20,8 +20,8 @@
     "POSITION_LOOP": 3
   },
   "DIFF_ENABLED": true,
-  "DIFF_LENGTH": 0.3,
-  "DIFF_WIDTH": 0.2,
+  "DIFF_LENGTH": 0.26,
+  "DIFF_WIDTH": 0.153,
   "command_map": {
       "CMD_CHANGE_Enable": {"T": 11002, "id": 1},
       "CMD_CHANGE_Disable": {"T": 11003, "id": 1},

@@ -127,25 +127,26 @@ class Steering:
         self.__fileWriterServo = fileWriterServoFuture.result()
         return self
 
-    
     def __setMotors(self, vals) -> None:
         """Set motor values [FR, RR, RL, FL]"""
-        for i in range(4):    
-            self.__writeMotor(self.__generateMotorCommand("CMD_DDSM_CTRL", id=self.__config["MOTOR_IDS_MAP"][i], cmd=vals[i]))
+        for i in range(4):
+            self.__writeMotor(
+                self.__generateMotorCommand(
+                    "CMD_DDSM_CTRL", id=self.__config["MOTOR_IDS_MAP"][i], cmd=vals[i]
+                )
+            )
             sleep(0.01)
 
-    def __getDiferentialforWheels(self, angle : float, speed: float):
+    def __getDiferentialforWheels(self, angle: float):
         if angle == 0 or not self.__config["DIFF_ENABLED"]:
-            return 1
+            return [1, 1, 1, 1]
         delta = math.radians(angle)
         Rc = self.__config["DIFF_LENGTH"] / (2 * math.tan(delta))
         Rin = Rc - self.__config["DIFF_WIDTH"] / 2
         Rout = Rc + self.__config["DIFF_WIDTH"] / 2
         k_in = Rin / Rc
         k_out = Rout / Rc
-        if angle > 0:
-            return [k_in, k_in, k_out, k_out]
-        return [k_out, k_out, k_in, k_in]
+        return [k_in, k_in, k_out, k_out]
 
     def __writeSerialMotor(self) -> None:
         print("[STEER] writeSerialMotor worker started")
@@ -157,13 +158,13 @@ class Steering:
         )
         self.__serialMotor.readline().decode("utf-8").strip()
         while not self.stopEvent.is_set():
-            if self.STEER_MANUAL:
+            if self._STEER_MANUAL:
                 continue
             speed = self.__gamepad.currentSpeed
             angle = self.__gamepad.currentAngle
-            diff = self.__getDiferentialforWheels(angle, speed)
+            diff = self.__getDiferentialforWheels(angle)
             values = [
-                int(round(speed)) * self.__config["MOTOR_INVERT"][idx] * self.diff[idx]
+                int(round(speed)) * self.__config["MOTOR_INVERT"][idx] * diff[idx]
                 for idx in range(4)
             ]
             self.__setMotors(values)
@@ -245,7 +246,7 @@ class Steering:
 
     def stop(self) -> None:
         command = "CMD90;90"
-        self.__setMotors(0, 0, 0, 0)
+        self.__setMotors([0, 0, 0, 0])
         for i in range(4):
             self.__generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
             self.__serialMotor.write(command.encode() + b"\n")
