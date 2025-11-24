@@ -22,7 +22,8 @@ cat <<EOF | sudo tee $SERVICE_FILE >/dev/null
 Description=Autostart service for jetson-car
 
 [Service]
-Type=simple
+Type=forking
+TimeoutStartSec=0
 ExecStart=${PYTHON_PATH} ${PYTHON_SCREEN_PATH} &
 ExecStartPost=${PYTHON_PATH} ${PYTHON_MAIN_PATH}
 Restart=on-failure
