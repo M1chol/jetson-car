@@ -2,3 +2,5 @@ pyserial
 evdev
 luma.core
 luma.oled
+pandas
+matplotlib
