@@ -44,7 +44,7 @@ Using driver boards simplifies the power layout, but appropriate connectors are 
 
 ![image](https://github.com/M1chol/jetson-car/blob/main/images/power.svg)
 
-Circuit breakers were also used increased safety, marked `BG`, `B1`, `B2`, `B3`. Additionally main power switch was added - marked `O1`.
+Circuit breakers were also used for increased safety, marked `BG`, `B1`, `B2`, `B3`. Additionally main power switch was added - marked `O1`.
 
 Device  | Voltage range | Max current | Connector
 ------- | ------------- | ----------- | ---------
@@ -64,9 +64,9 @@ This repository holds all the software needed to recreate the described project 
 3. Python tooling for testing individual systems
 4. Bash script for automating the installation process
 
-Each section will be expanded on bellow.
+Each section will be expanded on below.
 
-[^2]: DDSM400 Motor driver board code is not provided in the repo. See more bellow
+[^2]: DDSM400 Motor driver board code is not provided in the repo. See more below
 
 ### Servo driver
 The provided code - `servoDriver.ino` implements a simple communication protocol.
