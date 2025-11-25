@@ -1,6 +1,6 @@
 from car.steering import Steering
 from concurrent.futures import ThreadPoolExecutor, wait
-from car.virtual_gamepad import VirtualGamepad
+from car.virtualGamepad import VirtualGamepad
 from car.fileHandler import FileHandler
 from threading import Event
 from time import sleep
