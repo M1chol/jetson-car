@@ -41,11 +41,11 @@ class FileHandler:
                         # SERVO 2823.037912669 FBK;0.35;-0.53 -21.978607177734375
                         line = {
                             "type": "SERVO",
-                            "time": item[1],
+                            "time": float(item[1]),
                             "data": {
-                                "setAngle": item[3],
-                                "servo_1": feedback[1],
-                                "servo_2": feedback[2],
+                                "setAngle": float(item[3]),
+                                "servo_1": float(feedback[1]),
+                                "servo_2": float(feedback[2]),
                                 "feedback_type": feedback[0],
                             },
                         }
@@ -57,7 +57,7 @@ class FileHandler:
                     try:
                         line = {
                             "type": "MOTOR",
-                            "time": item[1],
+                            "time": float(item[1]),
                             "data": json.loads(item[2]),
                         }
                     except Exception as e:
