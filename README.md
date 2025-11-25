@@ -18,7 +18,7 @@ Data collected from wheel encoders and servos, providing real feedback, can be u
 
 ## Goals of the project
 - [x] Manual steering
-- [ ] Course mapping
+- [ ] Course mapping (almost here !!!)
 - [ ] Simple course following
 - [ ] Advanced course following
 - [ ] Course navigation
@@ -32,16 +32,19 @@ Here is the list of the main components used for this project. These are the com
 - [DDSM Driver Board](https://www.waveshare.com/product/ddsm-driver-hat-b.htm)
 - [2x Servo Motor with High-Precision Magnetic Encoder](https://www.waveshare.com/product/st3215-hs-servo-motor.htm)
 - [Servo Driver Board](https://www.waveshare.com/servo-driver-with-esp32.htm)
-- 12 V battery (see power layout section)
+- 6S (22.2V) LiPo battery
+- [12 V power regulator](https://www.victronenergy.pl/dc-dc-converters/orion-24-12-5-10)
 
 ### Optional but recommended
 - [4x Suspension for DDSM400](https://www.waveshare.com/UGV-Suspension-B.htm)
 - 512 GB M.2 NVMe SSD
 
 ### Power layout
-> This section will be expanded.
+Using driver boards simplifies the power layout, but appropriate connectors are needed. The Jetson could be  powered from the same battery as the rest of the components, but voltage fluctuations could cause instability. High-quality 12V voltage regulator was used to omit potential problems. As maximum voltage of the servo driver is 12V it also needs to be stepped-down in some way. Here is our full power layout:
 
-Using driver boards simplifies the power layout, but appropriate connectors are needed. The Jetson can be safely powered from the same battery as the rest of the components, but it requires a high-quality regulator in between. Currently considering [DFRobot](https://www.dfrobot.com/product-752.html).
+![image](https://github.com/M1chol/jetson-car/blob/main/images/power.svg)
+
+Circuit breakers were also used increased safety, marked `BG`, `B1`, `B2`, `B3`. Additionally main power switch was added - marked `O1`.
 
 Device  | Voltage range | Max current | Connector
 ------- | ------------- | ----------- | ---------
@@ -51,35 +54,35 @@ DDSM400 (single) | DC 9–28 V | 2.4 A | PH2.0×4P
 DDSM400 driver board | DC 9–28 V | 9.6 A[^1] | 5.5×2.5 mm DC power jack or XT60
 Jetson Orin Nano | DC 9–20 V | ~2.3 A | 5.5×2.5 mm DC power jack
 
-![image](https://github.com/M1chol/jetson-car/blob/main/images/power.svg)
-
 [^1]: Calculated by multiplying the maximum current by the number of devices.
 
 ## Software
-> This section will be expanded.
+This repository holds all the software needed to recreate the described project fully[^2]: 
 
-There are two main parts of the software:
-1. Arduino code for the driver boards
-2. Python code running on the Jetson
+1. Arduino code for servo driver board
+2. Python code for running the car
+3. Python tooling for testing individual systems
+4. Bash script for automating the installation process
 
-### DDSM400 Driver
-> This will be changed in the future to simplify the communication protocol.
+Each section will be expanded on bellow.
 
-I am using the default example code provided by Waveshare. It comes with a lot of features, but this project uses JSON communication over UART.
+[^2]: DDSM400 Motor driver board code is not provided in the repo. See more bellow
 
 ### Servo driver
-> Communication protocol is subject to change.
+The provided code - `servoDriver.ino` implements a simple communication protocol.
+1. Feedback enable command `BEG` - `BEG20` enables a  feedback loop with 20 ms interval. Driver will respond with `ACK BEG 20`, and then continuously write `FBK;<x>;<y>` commands containing current angles of both servos.
+2. Steering command `CMD<x>;<y>` - `CMD90;90` steers both servos to 90°. Driver will respond with `ACK;90;90` command.
+3. Feedback stop command `STP` - pauses the feedback loop. Driver will respond with `ACK STP`
+4. Calibration command `CAL` - sets the current position of the servos as the internal 0°. Driver will respond with `ACK CAL`
 
-The provided code (`servoDriver.ino`) implements a very simple communication protocol.
-1. Feedback enable command `FBK`, e.g., `FBK20` enables a 20 ms response loop.
-2. Steering command `CMD`, e.g., `CMD90;90` steers both servos to 90°.
+When the feedback read from servo fails driver will write `FBK_ERR` command (unlikely). This protocol can be tested using `tools/directCom.py` from the Jetson side (see tools section).
 
-The driver board responds with an `ACK` command every time, e.g., `ACK20` for `FBK20` and `ACK45;135` for `CMD45;135`.
-
-### Jetson
+### Running the car
+> This whole section is out of date and will be updated in the future.
+>
 > This section will be updated when new modules are implemented.
 
-The Python code is built as modules, which are then imported into the `main.py` file that orchestrates execution. The flow is separated into two parts:
+The Python code is built as modules, which are then imported into the `setup.py` file that orchestrates execution. The flow is separated into two parts:
 1. Setup stage
 2. Launching workers
 
@@ -92,16 +95,43 @@ Setup schematic:
     
 ![image](https://github.com/M1chol/jetson-car/blob/main/images/setup.svg)
     
+
 ---
 Worker launching schematic; each oval represents a thread inside `ThreadPoolExecutor`:    
     
 ![image](https://github.com/M1chol/jetson-car/blob/main/images/workers.svg)
 
+### Tools
+
+> TODO
+
+List of tools:
+
+- directCom.py
+- testCar.py
+- testMotor.py
+- screen.py
+
+### `autostart.sh`
+
+> TODO
+
+`autostart.sh` automates creating service to start the project with the system. 
+
+### DDSM400 Driver
+
+> This could be changed in the future to simplify the communication protocol.
+
+Right now default factory flashed code provided by Waveshare is being used. It comes with a lot of features, but this project uses only JSON communication over UART. Code can be found on the [Waveshare Wiki](https://www.waveshare.com/wiki/DDSM_Driver_HAT_(B))
+
+### 
+
 ## Getting started
+
 > This section will be expanded.
 
-To set up the Jetson, follow the [official guide](https://developer.nvidia.com/embedded/learn/get-started-jetson-orin-nano-devkit).
-Then use the Arduino IDE to flash the driver boards with the provided code. The last step is to set up the Python code on your Jetson device:
+To set up the Jetson, follow the [official](https://developer.nvidia.com/embedded/learn/get-started-jetson-orin-nano-devkit) or [my guide](https://m1chol.github.io/m1/2025-09-22/jetson).
+Then use the Arduino IDE to flash the servo driver board with the provided code (`servoDriver.ino`). The last step is to set up the Python code on your Jetson device:
 
 ```bash
 git clone https://github.com/M1chol/jetson-car
@@ -116,3 +146,5 @@ python main.py
 This project is licensed under the Apache License, Version 2.0, modified with the Commons Clause. See https://commonsclause.com/ for more information.
 
 *Proofread with AI assistance*
+
+[^2]: 
