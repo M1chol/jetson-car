@@ -28,6 +28,8 @@ Data collected from wheel encoders and servos, providing real feedback, can be u
 
 *Implemented functionalities are marked.*
 
+![image](https://github.com/M1chol/jetson-car/blob/main/images/car.jpg?raw=true)
+
 ## Hardware
 Here is the list of the main components used for this project. These are the components required for the current state of the software. The links are provided for your convenience only; I am in no way affiliated with the sellers.
 - [Jetson Orin Nano Developer Kit](https://kamami.pl/en/jetson-development-kits/1184505-nvidia-jetson-orin-nano-8gb-development-kit-development-kit-with-arm-cortex-a78ae-8gb-ram-5906623468744.html?SubmitCurrency=1&id_currency=1)
