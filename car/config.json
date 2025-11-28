@@ -22,6 +22,7 @@
   "DIFF_ENABLED": true,
   "DIFF_LENGTH": 0.26,
   "DIFF_WIDTH": 0.153,
+  "WHEEL_RADIUS": 0.03725,
   "command_map": {
       "CMD_CHANGE_Enable": {"T": 11002, "id": 1},
       "CMD_CHANGE_Disable": {"T": 11003, "id": 1},
