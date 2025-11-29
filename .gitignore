@@ -2,3 +2,4 @@
 __pycache__
 debug.txt
 results/temp/*.txt
+results/temp/*.csv

@@ -4,3 +4,4 @@ luma.core
 luma.oled
 pandas
 matplotlib
+streamlit
