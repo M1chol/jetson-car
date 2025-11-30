@@ -148,10 +148,11 @@ class WholeFileInterpolator(Transformer):
 
 
 class WholeFilePathCalculator(Transformer):
-    def __init__(self, timestep: float, wheelRadius: float, diffLength: float):
+    def __init__(self, timestep: float, wheelRadius: float, diffLength: float, offset: float):
         self.timestep = timestep
         self.wheelRadius = wheelRadius
         self.diffLength = diffLength
+        self.offset = offset
 
     def transform(self, data: pd.DataFrame) -> pd.DataFrame:
         data["speed_mean"] = (
@@ -164,7 +165,7 @@ class WholeFilePathCalculator(Transformer):
             data["speed_mean"] / 10 * 2 * np.pi * self.wheelRadius / 60
         )
         x, y, theta = 0.0, 0.0, 0.0
-        data["angle_mean"] = (data["angle_front"] - data["angle_rear"]) / 2 + 1
+        data["angle_mean"] = (data["angle_front"] - data["angle_rear"]) / 2 + self.offset
         data["angle_mean_rad"] = np.deg2rad(data["angle_mean"])
         pos_x = []
         pos_y = []
