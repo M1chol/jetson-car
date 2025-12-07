@@ -139,9 +139,15 @@ class Steering:
         if angle == 0 or not self.__config["DIFF_ENABLED"]:
             return [1, 1, 1, 1]
         delta = math.radians(angle)
-        Rc = self.__config["DIFF_LENGTH"] / (2 * math.tan(delta))
-        Rin = Rc - self.__config["DIFF_WIDTH"] / 2
-        Rout = Rc + self.__config["DIFF_WIDTH"] / 2
+
+        L = self.__config["DIFF_LENGTH"]
+        D = self.__config["DIFF_WIDTH"]
+
+        Rc = L / (2 * math.tan(delta))
+
+        Rin = math.sqrt((Rc - D / 2)**2 + (L / 2)**2)
+        Rout = math.sqrt((Rc + D / 2)**2 + (L / 2)**2)
+
         k_in = Rin / Rc
         k_out = Rout / Rc
         return [k_in, k_in, k_out, k_out]
