@@ -2,9 +2,11 @@
 set -e
 
 echo "Setting up virtual environment..."
-python3 -m venv .venv
+python3 -m venv .venv --system-site-packages
 "$(pwd)/.venv/bin/pip" install --upgrade pip
+echo "Installing requirements..."
 "$(pwd)/.venv/bin/pip" install -r requirements.txt
+echo "cv2 installation skipped, make sure you have it installed globally"
 
 SERVICE_NAME="jetson-car-autostart"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
