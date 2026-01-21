@@ -24,10 +24,10 @@ class Steering:
         )
         self.DEBUG = debug
         self.DEBUG_CONTROLLER = False
-        self._STEER_MANUAL = False
+        self.STEER_MANUAL = bool(False)
         """Setting this flag pauses motorWriter loop"""
 
-    def __openSerial(self) -> str:
+    def __openSerial(self) -> bool:
         servoPort = None
         motorPort = None
         ports = serial.tools.list_ports.comports()
@@ -53,6 +53,7 @@ class Steering:
         self.__serialMotor = serial.Serial(
             motorPort, baudrate=115200, timeout=1, dsrdtr=False, rtscts=False
         )
+        #TODO: Check if this is needed
         self.__serialServo.setRTS(False)
         self.__serialServo.setDTR(False)
         self.__serialMotor.setRTS(False)
@@ -65,10 +66,14 @@ class Steering:
     def __writeMotor(self, command: str) -> None:
         if self.DEBUG:
             print(f"[STEER -> MOTOR] {command}")
-        self.__serialMotor.write(command.encode() + b"\n")
+        if self.__serialMotor:
+            self.__serialMotor.write(command.encode() + b"\n")
 
     def __motorSetup(self) -> bool:
         print("[STEER] Starting motor setup")
+        if not self.__serialMotor:
+            print("[STEER] Serial connection is not established (motor)")
+            return False
         self.__serialMotor.reset_input_buffer()
         self.__serialMotor.reset_output_buffer()
         for i in range(4):
@@ -100,6 +105,9 @@ class Steering:
 
     def __servoSetup(self) -> bool:
         print("[STEER] Starting servo setup")
+        if not self.__serialServo:
+            print("[STEER] Serial connection is not established (servo)")
+            return False
         self.__serialServo.reset_input_buffer()
         self.__serialServo.reset_output_buffer()
         command = "BEG" + str(self.__config["SERVO_FBK_FREQ_MS"])
@@ -152,8 +160,11 @@ class Steering:
         k_out = Rout / Rc
         return [k_in, k_in, k_out, k_out]
 
-    def __writeSerialMotor(self) -> None:
+    def __writeSerialMotor(self) -> bool:
         print("[STEER] writeSerialMotor worker started")
+        if not self.__serialMotor:
+            print("[STEER] writeSerialMotor failed, serial connection is not established")
+            return False
         # Set heartbeat
         self.__writeMotor(
             self.__generateMotorCommand(
@@ -162,7 +173,7 @@ class Steering:
         )
         self.__serialMotor.readline().decode("utf-8").strip()
         while not self.stopEvent.is_set():
-            if self._STEER_MANUAL:
+            if self.STEER_MANUAL:
                 continue
             speed = self.__gamepad.currentSpeed
             angle = self.__gamepad.currentAngle
@@ -172,19 +183,30 @@ class Steering:
                 for idx in range(4)
             ]
             self.__setMotors(values)
+        return True
 
-    def __writeSerialServo(self) -> None:
+    def __writeSerialServo(self) -> bool:
         print("[STEER] writeSerialServo worker started")
         lastAngle = self.__gamepad.currentAngle
+        if not self.__serialServo:
+            print("[STEER] Serial connection is not established (servo)")
+            return False
         while not self.stopEvent.is_set():
             if self.__gamepad.currentAngle != lastAngle:
                 command = f"CMD{self.__gamepad.currentAngle:.2f};{-self.__gamepad.currentAngle:.2f}"
                 self.__serialServo.write(command.encode() + b"\n")
             lastAngle = self.__gamepad.currentAngle
             sleep(0.1)
+        return True
 
-    def __readSerialMotor(self) -> None:
+    def __readSerialMotor(self) -> bool:
         print("[STEER] readSerialMotor worker started")
+        if not self.__serialMotor:
+            print("[STEER] Serial connection is not established (servo)")
+            return False
+        if not self.__fileWriter:
+            print("[STEER] File writer is None")
+            return False
         count = 0
         timer = time.monotonic()
         while not self.stopEvent.is_set():
@@ -216,9 +238,16 @@ class Steering:
             except Exception as e:
                 if self.DEBUG:
                     print(f"[MOTOR READ ERR] {e}")
+        return True
 
-    def __readSerialServo(self) -> None:
+    def __readSerialServo(self) -> bool:
         print("[STEER] readSerialServo worker started")
+        if not self.__serialServo:
+            print("[STEER] Serial connection is not established (servo)")
+            return False
+        if not self.__fileWriter:
+            print("[STEER] File writer is None - readSerialServo")
+            return False
         count = 0
         timer = time.monotonic()
         while not self.stopEvent.is_set():
@@ -250,6 +279,7 @@ class Steering:
             except Exception as e:
                 if self.DEBUG:
                     print(f"[SERVO READ ERR] {e}")
+        return True
 
     def startWorker(self, executor) -> None:
         executor.submit(self.__writeSerialServo)
@@ -260,7 +290,10 @@ class Steering:
         if self.DEBUG_CONTROLLER:
             executor.submit(self.__gamepad.printData)
 
-    def stop(self) -> None:
+    def stop(self) -> bool:
+        if not self.__serialMotor:
+            print("[STEER] Stop failed serial motor connection is Null")
+            return False
         command = "CMD90;90"
         self.__setMotors([0, 0, 0, 0])
         for i in range(4):
@@ -268,6 +301,7 @@ class Steering:
             self.__serialMotor.write(command.encode() + b"\n")
         self.stopEvent.set()
         print("[STEER] requested thread close")
+        return True
 
     def __generateMotorCommand(self, cmd_name: str, **kwargs) -> str:
         if cmd_name not in self.__config["command_map"]:

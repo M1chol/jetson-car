@@ -43,15 +43,18 @@ class Gamepad:
         self.__gamepad = evdev.InputDevice(selected_path)
         return True
 
-    def updateGamepad(self) -> None:
-        print("[STEER] updateGamepad worker started")
+    def updateGamepad(self) -> bool:
+        print("[GAMEPAD] updateGamepad worker started")
+        if not self.__gamepad:
+            print("[GAMEPAD] updateGamepad failed, gamepad is None")
+            return False
         for event in self.__gamepad.read_loop():
             if event.type == evdev.ecodes.EV_KEY:
                 button_name = self.__buttonMap.get(event.code)
                 if button_name:
                     self.__buttonState[button_name] = event.value == 1
                     if button_name == "B" and event.value == 1:
-                        print("[STEER] Close button pressed, quiting...")
+                        print("[GAMEPAD] Close button pressed, quiting...")
                         self.__carStopEvent.set()
                         self._stopEvent.set()
             elif event.type == evdev.ecodes.EV_ABS:
@@ -77,6 +80,7 @@ class Gamepad:
                     self.currentSpeed = self.currentGas - self.currentBreak
             if self._stopEvent.is_set():
                 break
+        return True
 
     def printData(self) -> None:
         print("PrintData started sleeping 2 seconds...")

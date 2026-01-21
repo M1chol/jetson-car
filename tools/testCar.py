@@ -4,6 +4,7 @@ from car.virtualGamepad import VirtualGamepad
 from car.fileHandler import FileHandler
 from threading import Event
 from time import sleep
+from pathlib import Path
 import json
 
 with open("config.json") as file:
@@ -16,8 +17,8 @@ event = Event()
 gamepad = VirtualGamepad(carStopEvent=event, config=config, debug=False)
 
 with ThreadPoolExecutor() as executor:
-    motor_file_handler_future = executor.submit(FileHandler("motor.txt").setup)
-    servo_file_handler_future = executor.submit(FileHandler("servo.txt").setup)
+    motor_file_handler_future = executor.submit(FileHandler(Path("motor.txt")).setup)
+    servo_file_handler_future = executor.submit(FileHandler(Path("servo.txt")).setup)
     steering_future = executor.submit(
         Steering(config, debug=False, VIRTUAL_GAMEPAD=gamepad).setup,
         motor_file_handler_future,
@@ -27,6 +28,9 @@ with ThreadPoolExecutor() as executor:
     motor_file_handler = motor_file_handler_future.result()
     servo_file_handler = servo_file_handler_future.result()
     steer = steering_future.result()
+    if not steer:
+        print("steering init failed")
+        raise Exception
 
     if all([steer, motor_file_handler, servo_file_handler]):
         print("[MAIN] Setup threads finished successfully")

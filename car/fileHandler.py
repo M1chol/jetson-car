@@ -24,9 +24,12 @@ class FileHandler:
     def write(self, data: str) -> None:
         self.queue.put(data)
 
-    def writeWorker(self) -> None:
+    def writeWorker(self) -> bool:
+        if not self.file:
+            print("[WRITER] File not opened cannot start worker")
+            return False
         print("[WRITER] File writer worker started")
-        while not self.stop_event.is_set() or self.queue.qsize > 0:
+        while not self.stop_event.is_set() or not self.queue.empty:
             try:
                 item = self.queue.get(timeout=0.1)
                 item = item.split()
@@ -71,6 +74,7 @@ class FileHandler:
             except queue.Empty:
                 pass
         self.file.close()
+        return True
 
     def startWorker(self, executor):
         executor.submit(self.writeWorker)
