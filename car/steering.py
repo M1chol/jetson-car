@@ -120,15 +120,15 @@ class Steering:
 
     def setup(self, fileWriterFuture):
         if not self.__gamepad:
-            return None
+            raise ValueError("[STEER] Gamepad is None")
         if not self.__gamepad.getGamePad():
-            return None
+            raise ValueError("[STEER] Gamepad setup failed")
         if not self.__openSerial():
-            return None
+            raise ValueError("[STEER] Serial connection failed")
         if not self.__motorSetup():
-            return None
+            raise ValueError("[STEER] Motor setup failed")
         if not self.__servoSetup():
-            return None
+            raise ValueError("[STEER] Servo setup failed")
         wait([fileWriterFuture])
         self.__fileWriter = fileWriterFuture.result()
         return self
