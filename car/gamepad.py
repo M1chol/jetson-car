@@ -12,7 +12,7 @@ class Gamepad:
         self.__gamepad = None
         self.currentAngle = 0
         self.currentSpeed = 0
-        self.currentBreak = 0
+        self.currentBrake = 0
         self.currentGas = 0
         self.__config = config
         self.__DEBUG = debug
@@ -61,23 +61,24 @@ class Gamepad:
                 if event.code == evdev.ecodes.ABS_X:
                     self.currentAngle = (
                         event.value
+                        - self.__config["PAD_READ_CENTER"]
                         / self.__config["PAD_READ_TURN"]
                         * self.__config["MAX_ANGLE"]
                     )
-                if event.code == evdev.ecodes.ABS_Z:
-                    self.currentBreak = (
+                if event.code == evdev.ecodes.ABS_BRAKE:
+                    self.currentBrake = (
                         event.value
                         / self.__config["PAD_READ_SPEED"]
                         * self.__config["MAX_SPEED"]
                     )
-                    self.currentSpeed = self.currentGas - self.currentBreak
-                if event.code == evdev.ecodes.ABS_RZ:
+                    self.currentSpeed = self.currentGas - self.currentBrake
+                if event.code == evdev.ecodes.ABS_GAS:
                     self.currentGas = (
                         event.value
                         / self.__config["PAD_READ_SPEED"]
                         * self.__config["MAX_SPEED"]
                     )
-                    self.currentSpeed = self.currentGas - self.currentBreak
+                    self.currentSpeed = self.currentGas - self.currentBrake
             if self._stopEvent.is_set():
                 break
         return True
