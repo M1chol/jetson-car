@@ -156,8 +156,8 @@ class Steering:
         Rin = math.sqrt((Rc - D / 2)**2 + (L / 2)**2)
         Rout = math.sqrt((Rc + D / 2)**2 + (L / 2)**2)
 
-        k_in = Rin / Rc
-        k_out = Rout / Rc
+        k_in = abs(Rin / Rc)
+        k_out = abs(Rout / Rc)
         if self.__gamepad.currentAngle > 0:
             return [k_in, k_in, k_out, k_out]
         else:

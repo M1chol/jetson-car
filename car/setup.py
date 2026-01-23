@@ -22,6 +22,8 @@ def start(*, persistRun=False, debug=False) -> bool:
             return False
 
     load_camera = config["CAMERA"]["ENABLED"]
+    if load_camera:
+        print("[CAR] will try to run camera setup")
 
     # Create folder if data should be saved
     if persistRun:
@@ -32,8 +34,7 @@ def start(*, persistRun=False, debug=False) -> bool:
 
     if frames_folder.exists():
         shutil.rmtree(frames_folder)
-    else:
-        frames_folder.mkdir(parents=True, exist_ok=True)
+    frames_folder.mkdir(parents=True, exist_ok=True)
 
     with ThreadPoolExecutor() as executor:
         # Run setup in pararel
