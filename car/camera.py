@@ -1,6 +1,6 @@
 import queue
 import cv2
-cv2.setLogLevel(cv2.LOG_LEVEL_WARNING)
+cv2.setLogLevel(3) # Set log level to WARNINGS
 from threading import Event
 
 class Camera:
