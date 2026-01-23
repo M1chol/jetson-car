@@ -62,12 +62,11 @@ class Gamepad:
                         self._stopEvent.set()
             elif event.type == evdev.ecodes.EV_ABS:
                 if event.code == evdev.ecodes.ABS_X:
-                    self.currentAngle = (
-                        event.value
-                        - self.__config["PAD_READ_CENTER"]
-                        / self.__config["PAD_READ_TURN"]
-                        * self.__config["MAX_ANGLE"]
-                    )
+                    angle = (event.value / self.__config["PAD_READ_TURN"] - 0.5) * 2 * self.__config["MAX_ANGLE"]
+                    if abs(angle) > self.__config["PAD_DEADZONE_DEG"]:
+                        self.currentAngle = angle
+                    else:
+                        self.currentAngle = 0
                 if event.code == evdev.ecodes.ABS_BRAKE:
                     self.currentBrake = (
                         event.value
