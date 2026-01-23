@@ -158,7 +158,10 @@ class Steering:
 
         k_in = Rin / Rc
         k_out = Rout / Rc
-        return [k_in, k_in, k_out, k_out]
+        if self.__gamepad.currentAngle > 0:
+            return [k_in, k_in, k_out, k_out]
+        else:
+            return [k_out, k_out, k_in, k_in]
 
     def __writeSerialMotor(self) -> bool:
         print("[STEER] writeSerialMotor worker started")
