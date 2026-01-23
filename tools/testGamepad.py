@@ -13,9 +13,12 @@ def describe_event(event):
 
     return f"{type_name} {code_name} = {event.value}"
 
-for path in list_devices():
-    dev = InputDevice(path)
-    print(path, dev.name)
-    for event in dev.read_loop():
-        if event.type in (ecodes.EV_KEY, ecodes.EV_ABS):
-            print(describe_event(event))
+try:
+    for path in list_devices():
+        dev = InputDevice(path)
+        print(path, dev.name)
+        for event in dev.read_loop():
+            if event.type in (ecodes.EV_KEY, ecodes.EV_ABS):
+                print(describe_event(event))
+except KeyboardInterrupt:
+    print("Exiting...")
