@@ -1,11 +1,1 @@
-from car.steering import Steering
-import json
-
-with open("config.json") as file:
-    config = json.load(file)
-    if not config:
-        print("Config file failed to load")
-        quit()
-
-steer = Steering(config, debug=True)
-steer.DEBUG_CONTROLLER = True
+print("To test the gamepad run python3 -m car.gamepad")

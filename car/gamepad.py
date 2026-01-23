@@ -97,7 +97,7 @@ class Gamepad:
 
 
 if __name__ == "__main__":
-    config_f = open("../config.json")
+    config_f = open("config.json")
     config = json.load(config_f)
     event = Event()
     pad = Gamepad(event, config, False)
