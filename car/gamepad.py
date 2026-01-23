@@ -49,6 +49,9 @@ class Gamepad:
             print("[GAMEPAD] updateGamepad failed, gamepad is None")
             return False
         for event in self.__gamepad.read_loop():
+            if abs(self.currentAngle) > self.__config["MAX_ANGLE"]:
+                self.currentAngle = 0
+                raise ValueError("Angle exceeds maximum limit")
             if event.type == evdev.ecodes.EV_KEY:
                 button_name = self.__buttonMap.get(event.code)
                 if button_name:
