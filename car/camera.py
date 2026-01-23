@@ -1,4 +1,6 @@
 import queue
+import cv2
+cv2.setLogLevel(cv2.LOG_LEVEL_WARNING)
 from threading import Event
 
 class Camera:
@@ -12,10 +14,17 @@ class Camera:
         self.stop_event = Event()
 
     def setup(self):
-        # Moved here to stop VirtualCamera from loading cv2
-        import cv2
         self.capture = cv2.VideoCapture(self.pipeline, cv2.CAP_GSTREAMER)
         return self
+
+    def capture_worker(self):
+        while not self.stop_event.is_set():
+            ret, frame = self.capture.read()
+            if ret:
+                if not self.frameQueue.full():
+                    self.frameQueue.put(frame.copy())
+            else:
+                break
 
     def save_worker(self):
         frame_count = 0
@@ -29,6 +38,7 @@ class Camera:
                 continue
 
     def startWorker(self, executor):
+        executor.submit(self.capture_worker)
         executor.submit(self.save_worker)
 
     def stop(self):
