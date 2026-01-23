@@ -23,7 +23,7 @@ class Steering:
             else VIRTUAL_GAMEPAD
         )
         self.DEBUG = debug
-        self.DEBUG_CONTROLLER = False
+        self.DEBUG_CONTROLLER = bool(False)
         self.STEER_MANUAL = bool(False)
         """Setting this flag pauses motorWriter loop"""
 
