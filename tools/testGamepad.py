@@ -18,8 +18,17 @@ try:
         dev = InputDevice(path)
         print(path, dev.name)
 
-        for code in dev.capabilities().get(ecodes.EV_ABS, []):
-            absinfo = dev.absinfo(code)
+        abs_caps = dev.capabilities().get(ecodes.EV_ABS, [])
+
+        for item in abs_caps:
+            # item may be an int OR a (code, AbsInfo) tuple
+            if isinstance(item, tuple):
+                code = item[0]
+                absinfo = item[1]
+            else:
+                code = item
+                absinfo = dev.absinfo(code)
+
             axis_name = ecodes.ABS.get(code, f"ABS_{code}")
 
             print(
@@ -31,9 +40,6 @@ try:
                 f"fuzz={absinfo.fuzz}, "
                 f"res={absinfo.resolution}"
             )
-            print(f"Calculated config values for {axis_name}: ")
-            print(f"PAD_READ_CENTER = {absinfo.value}")
-            print(f"PAD_READ_X = {absinfo.max - absinfo.min}")
 
         for event in dev.read_loop():
             if event.type in (ecodes.EV_KEY, ecodes.EV_ABS):
