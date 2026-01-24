@@ -5,5 +5,5 @@ luma.core
 luma.oled
 pandas
 matplotlib
-streamlit
+flask
 opencv-stubs

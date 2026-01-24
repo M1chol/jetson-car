@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard</title>
+
+  <!-- Vega stack -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<style>
+  .center {
+    margin: auto;
+    width: 60vw;
+    height: 15vw;
+    padding: 10px;
+}
+</style>
+
+<body>
+<div style="width: 60vw; margin: auto;">
+  <h1>Wynik postprocessingu</h1>
+  <span>Ścieżka:</span>
+  <input id="pathInput" type="text" placeholder="Enter path" value="results/temp/out.txt" style="width: 20%;">
+  <span>Time Step:</span>
+  <input id="timestepInput" type="number" placeholder="0.1" value="0.1" style="width: 20%;">
+  <span>Offset:</span>
+  <input id="offsetInput" type="number" placeholder="1" value="1" style="width: 20%;">
+  <button onclick="runAnalysis()">Run</button>
+
+  <h2>Ścieżka ruchu pojazdu</h2>
+  <div id="calcPath" class="center" style="height: 60vw;"></div>
+
+  <h2>Wykres średniej prędkości</h2>
+  <div id="speed" class="center"></div>
+
+  <h2>Wykres średniego kątu skrętu</h2>
+  <div id="angle" class="center"></div>
+
+  <h2>Wykres kątów skrętu</h2>
+  <div id="angles" class="center"></div>
+
+  <h2>Wykres prędkości</h2>
+  <div id="speeds" class="center"></div>
+
+</div>
+
+<script>
+const speed = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": "container",
+  "description": "speed graph",
+  "data": {
+    "url": "/data/speed"
+  },
+  "mark": {
+    "type": "line",
+    "point": false
+  },
+  "encoding": {
+    "x": {"field": "x", "type": "quantitative"},
+    "y": {"field": "y", "type": "quantitative"},
+  }
+};
+
+const angle = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "",
+  "width": "container",
+  "height": "container",
+  "data": {
+    "url": "/data/angle"
+  },
+  "mark": {
+    "type": "line",
+    "point": false
+  },
+  "encoding": {
+    "x": {"field": "x", "type": "quantitative"},
+    "y": {"field": "y", "type": "quantitative"},
+  }
+};
+
+const angles = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "",
+  "width": "container",
+  "height": "container",
+  "data": {
+    "url": "/data/angles"
+  },
+  "mark": {
+    "type": "line",
+    "point": false
+  },
+  "encoding": {
+    "x": {"field": "x", "type": "quantitative"},
+    "y": {"field": "y", "type": "quantitative"},
+    "color": {
+                "field": "location",
+                "type": "nominal",
+            },
+  }
+};
+
+const speeds = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "",
+  "width": "container",
+  "height": "container",
+  "data": {
+    "url": "/data/speeds"
+  },
+  "mark": {
+    "type": "line",
+    "point": false
+  },
+  "encoding": {
+    "x": {"field": "x", "type": "quantitative"},
+    "y": {"field": "y", "type": "quantitative"},
+    "color": {
+                "field": "wheel",
+                "type": "nominal",
+            },
+  }
+}
+
+const calcPath = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": "container",
+  "data": {
+    "url": "/data/path"
+  },
+  "mark": {"type": "line", "point": false},
+  "encoding": {
+    "x": {
+      "field": "x",
+      "type": "quantitative",
+      "scale": {"nice": false}
+    },
+    "y": {
+      "field": "y",
+      "type": "quantitative",
+      "scale": {"nice": false}
+    },
+    "order": {"field": "t"}
+  }
+};
+
+vegaEmbed("#speed", speed);
+vegaEmbed("#angle", angle);
+vegaEmbed("#angles", angles);
+vegaEmbed("#speeds", speeds);
+vegaEmbed("#calcPath", calcPath);
+
+</script>
+
+<script>
+function runAnalysis() {
+  const path = document.getElementById("pathInput").value;
+  const timestep = document.getElementById("timestepInput").value;
+  const offset = document.getElementById("offsetInput").value;
+  fetch(`/run/${timestep}/${offset}/${path}`, { method: 'POST' })
+    .then(response => {
+      if (response.ok) {
+        // Reload the visualizations
+        vegaEmbed("#speed", speed);
+        vegaEmbed("#angle", angle);
+        vegaEmbed("#angles", angles);
+        vegaEmbed("#speeds", speeds);
+        vegaEmbed("#calcPath", calcPath);
+      } else {
+        alert('Error running analysis');
+      }
+    });
+}
+</script>
+
+</body>
+</html>

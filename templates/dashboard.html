@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebRTC Dashboard</title>
+  <style>
+    body { margin: 0; font-family: Arial; background: #1a1a1a; }
+    #container { position: relative; width: 100%; max-width: 1200px; }
+    video { width: 100%; display: block; }
+    #overlay { 
+      position: absolute; 
+      top: 10px; 
+      left: 10px; 
+      color: white; 
+      background: rgba(0,0,0,0.5); 
+      padding: 10px; 
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <video id="video" autoplay playsinline></video>
+    <div id="overlay">
+      <div id="data"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/webrtc-adapter@8/out/adapter.js"></script>
+  <script>
+    const video = document.getElementById('video');
+    const dataDiv = document.getElementById('data');
+    const streamName = 'live'; // Change if needed
+
+    async function start() {
+      const pc = new RTCPeerConnection();
+      pc.ontrack = e => video.srcObject = e.streams[0];
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      const res = await fetch(`http://localhost:8889/webrtc/connect/${streamName}`, {
+        method: 'POST',
+        body: JSON.stringify({sdp: pc.localDescription.sdp})
+      });
+
+      const data = await res.json();
+      await pc.setRemoteDescription(new RTCSessionDescription({
+        type: 'answer',
+        sdp: data.sdp
+      }));
+    }
+
+    start();
+
+    setInterval(() => {
+      dataDiv.innerHTML = `
+        <p>Time: ${new Date().toLocaleTimeString()}</p>
+        <p>Stream: ${streamName}</p>
+      `;
+    }, 1000);
+  </script>
+</body>
+</html>
