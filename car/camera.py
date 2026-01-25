@@ -5,13 +5,15 @@ from threading import Event
 from concurrent.futures import wait
 
 os.environ["GST_DEBUG"] = "0"
+from car.fileHandler import FileHandler
+from car.virtualFileHandler import VirtualFileHandler
 import cv2
 
 class Camera:
     def __init__(self, config, location, debug=False):
         self.config = config
         self.location = location
-        self.fileWriter = None
+        self.fileWriter: FileHandler | VirtualFileHandler | None = None
         self.debug = debug 
         self.pipeline = self.config["CAMERA"]["PIPELINES"][self.config["CAMERA"]["PIPELINE"]]
         self.frameQueue = queue.Queue(maxsize=30)
@@ -30,6 +32,8 @@ class Camera:
             return
         if not self.capture or not self.capture.isOpened():
             print("[CAMERA] Capture device not opened, capture worker exiting")
+            return
+        if isinstance(self.fileWriter, VirtualFileHandler):
             return
         frame_count = 0
         while not self.stop_event.is_set():

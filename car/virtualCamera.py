@@ -1,9 +1,9 @@
-from car.virtualFileHandler import VirtualFileWriter
+from car.virtualFileHandler import VirtualFileHandler
 
 class VirtualCamera():
 
     def __init__(self):
-        self.fileWriter = VirtualFileWriter()
+        self.fileWriter = VirtualFileHandler()
         pass
 
     def setup(self, fileWriterFuture):

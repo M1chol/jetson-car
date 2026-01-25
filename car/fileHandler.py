@@ -76,8 +76,27 @@ class FileHandler:
         self.file.close()
         return True
 
-    def startWorker(self, executor):
-        executor.submit(self.writeWorker)
+    def writeWorkerSimple(self) -> bool:
+        if not self.file:
+            print("[WRITER] File not opened cannot start worker")
+            return False
+        print("[WRITER] File writer worker started")
+        while not self.stop_event.is_set() or not self.queue.empty:
+            try:
+                item = self.queue.get(timeout=0.1)
+                if self.DEBUG:
+                    print("[WRITER]", item)
+                self.file.writelines(item + "\n")
+            except queue.Empty:
+                pass
+        self.file.close()
+        return True
+
+    def startWorker(self, executor, simple=False) -> None:
+        if simple:
+            executor.submit(self.writeWorkerSimple)
+        else:
+            executor.submit(self.writeWorker)
 
     def getStatus(self):
         return self.stop_event

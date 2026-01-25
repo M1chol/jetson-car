@@ -91,7 +91,7 @@ def start(*, persistRun=False, debug=False) -> bool:
         steering.startWorker(executor)
         steering_file_handler.startWorker(executor)
         camera.startWorker(executor)
-        camera_file_handler.startWorker(executor)
+        camera_file_handler.startWorker(executor, simple=True)
 
         while not steering.getStatus():
             sleep(1)
