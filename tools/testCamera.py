@@ -23,13 +23,13 @@ gst_pipeline_stream = (
     "appsink drop=true max-buffers=1 sync=false"
 )
 
-image_location = Path("results/temp/images")
+image_location = Path("results/temp/frames")
 image_location.mkdir(exist_ok=True)
 shutil.rmtree(str(image_location))
 image_location.mkdir()
 timings = open(image_location / "timings.txt", "w")
 
-cap = cv2.VideoCapture(gst_pipeline, cv2.CAP_GSTREAMER)
+cap = cv2.VideoCapture(gst_pipeline_stream, cv2.CAP_GSTREAMER)
 frame_queue = queue.Queue(maxsize=30)
 save_thread_running = True
 

@@ -87,4 +87,4 @@ def path():
     return jsonify([{"x": xi, "y": yi, "t": ti} for xi, yi, ti in zip(x, y, t)])
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0")

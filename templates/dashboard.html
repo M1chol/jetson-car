@@ -1,21 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
   <title>WebRTC Dashboard</title>
   <style>
-    body { margin: 0; font-family: Arial; background: #1a1a1a; }
-    #container { position: relative; width: 100%; max-width: 1200px; }
-    video { width: 100%; display: block; }
-    #overlay { 
-      position: absolute; 
-      top: 10px; 
-      left: 10px; 
-      color: white; 
-      background: rgba(0,0,0,0.5); 
-      padding: 10px; 
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+    }
+    #container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    #video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: rgb(30, 30, 30);
+    }
+    #overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px;
       border-radius: 5px;
+      font-size: 14px;
+      pointer-events: none;
+    }
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+      display: none;
     }
   </style>
+  <script defer src="http://192.168.8.145:8889/reader.js"></script>
 </head>
 <body>
   <div id="container">
@@ -23,41 +55,68 @@
     <div id="overlay">
       <div id="data"></div>
     </div>
+    <div id="message"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/webrtc-adapter@8/out/adapter.js"></script>
   <script>
     const video = document.getElementById('video');
     const dataDiv = document.getElementById('data');
-    const streamName = 'live'; // Change if needed
+    const messageDiv = document.getElementById('message');
+    
+    const MEDIA_SERVER = 'http://192.168.8.145:8889';
+    const DASHBOARD_URL = 'http://192.168.8.145:5000';
+    
+    let reader = null;
 
-    async function start() {
-      const pc = new RTCPeerConnection();
-      pc.ontrack = e => video.srcObject = e.streams[0];
+    const setMessage = (str) => {
+      if (str !== '') {
+        messageDiv.style.display = 'block';
+        messageDiv.innerText = str;
+      } else {
+        messageDiv.style.display = 'none';
+      }
+    };
 
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
+    const loadAttributesFromQuery = () => {
+      const params = new URLSearchParams(window.location.search);
+      video.controls = params.get('controls') !== 'false';
+      video.muted = params.get('muted') !== 'false';
+      video.autoplay = params.get('autoplay') !== 'false';
+      video.playsInline = params.get('playsinline') !== 'false';
+    };
 
-      const res = await fetch(`http://localhost:8889/webrtc/connect/${streamName}`, {
-        method: 'POST',
-        body: JSON.stringify({sdp: pc.localDescription.sdp})
+    window.addEventListener('load', () => {
+      loadAttributesFromQuery();
+
+      const whepUrl = `${MEDIA_SERVER}/live/whep` + 
+        window.location.search;
+
+      reader = new MediaMTXWebRTCReader({
+        url: whepUrl,
+        onError: (err) => {
+          setMessage(err);
+        },
+        onTrack: (evt) => {
+          setMessage('');
+          video.srcObject = evt.streams[0];
+        },
       });
 
-      const data = await res.json();
-      await pc.setRemoteDescription(new RTCSessionDescription({
-        type: 'answer',
-        sdp: data.sdp
-      }));
-    }
+      // Update overlay data every second
+      setInterval(() => {
+        dataDiv.innerHTML = `
+          <p>Time: ${new Date().toLocaleTimeString()}</p>
+          <p>Media Server: 192.168.8.145:8889</p>
+          <p>Status: Connected</p>
+        `;
+      }, 1000);
+    });
 
-    start();
-
-    setInterval(() => {
-      dataDiv.innerHTML = `
-        <p>Time: ${new Date().toLocaleTimeString()}</p>
-        <p>Stream: ${streamName}</p>
-      `;
-    }, 1000);
+    window.addEventListener('beforeunload', () => {
+      if (reader !== null) {
+        reader.close();
+      }
+    });
   </script>
 </body>
 </html>
