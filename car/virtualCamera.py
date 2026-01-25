@@ -1,10 +1,12 @@
-from car.camera import Camera
+from car.virtualFileHandler import VirtualFileWriter
 
-class VirtualCamera(Camera):
+class VirtualCamera():
+
     def __init__(self):
+        self.fileWriter = VirtualFileWriter()
         pass
 
-    def setup(self):
+    def setup(self, fileWriterFuture):
         return self
     
     def startWorker(self, executor):
@@ -12,3 +14,6 @@ class VirtualCamera(Camera):
     
     def stop(self):
         return
+    
+    def getStatus(self) -> bool:
+        return True

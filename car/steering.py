@@ -16,7 +16,7 @@ class Steering:
         self.__serialMotor = None
         self.stopEvent = threading.Event()
         self.__config = config
-        self.__fileWriter = None
+        self.fileWriter = None
         self.__gamepad = (
             Gamepad(self.stopEvent, config, debug)
             if not VIRTUAL_GAMEPAD
@@ -130,7 +130,7 @@ class Steering:
         if not self.__servoSetup():
             raise ValueError("[STEER] Servo setup failed")
         wait([fileWriterFuture])
-        self.__fileWriter = fileWriterFuture.result()
+        self.fileWriter = fileWriterFuture.result()
         return self
 
     def __setMotors(self, vals) -> None:
@@ -207,7 +207,7 @@ class Steering:
         if not self.__serialMotor:
             print("[STEER] Serial connection is not established (servo)")
             return False
-        if not self.__fileWriter:
+        if not self.fileWriter:
             print("[STEER] File writer is None")
             return False
         count = 0
@@ -233,7 +233,7 @@ class Steering:
                     + " "
                     + str(self.__gamepad.currentSpeed)
                 )
-                self.__fileWriter.write(line)
+                self.fileWriter.write(line)
                 if self.DEBUG:
                     print(f"[STEER <- MOTOR] {msg}")
                     print(f"[STEER -> WRITER] {line}")
@@ -248,7 +248,7 @@ class Steering:
         if not self.__serialServo:
             print("[STEER] Serial connection is not established (servo)")
             return False
-        if not self.__fileWriter:
+        if not self.fileWriter:
             print("[STEER] File writer is None - readSerialServo")
             return False
         count = 0
@@ -274,7 +274,7 @@ class Steering:
                     + " "
                     + str(self.__gamepad.currentAngle)
                 )
-                self.__fileWriter.write(line)
+                self.fileWriter.write(line)
                 if self.DEBUG:
                     print(f"[STEER <- SERVO] {msg}")
                     print(f"[STEER -> WRITER] {line}")

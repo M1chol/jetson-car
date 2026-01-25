@@ -7,4 +7,5 @@ parser.add_argument("--save", action="store_true", help="Save data to persisted 
 args = parser.parse_args()
 config = None
 
-start(persistRun=args.save, debug=args.debug)
+if not start(persistRun=args.save, debug=args.debug):
+    print("[MAIN] Car setup failed, exiting")

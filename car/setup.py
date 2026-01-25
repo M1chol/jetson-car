@@ -9,21 +9,22 @@ import json
 from datetime import datetime
 from pathlib import Path
 import shutil
+from car.virtualFileHandler import VirtualFileWriter
 
 """ Setup and start car components @arg persistRun: bool - if data should be saved to dated folder"""
 def start(*, persistRun=False, debug=False) -> bool:
     
     # Load config
-    print("[CAR] Loading config file...")
+    print("[SETUP] Loading config file...")
     with open("car/config.json") as file:
         config = json.load(file)
         if not config:
-            print("[CAR] Config file failed to load")
+            print("[SETUP] Config file failed to load")
             return False
 
     load_camera = config["CAMERA"]["ENABLED"]
     if load_camera:
-        print("[CAR] will try to run camera setup")
+        print("[SETUP] Will try to run camera setup")
 
     # Create folder if data should be saved
     if persistRun:
@@ -38,7 +39,7 @@ def start(*, persistRun=False, debug=False) -> bool:
 
     with ThreadPoolExecutor() as executor:
         # Run setup in pararel
-        print("[CAR] Starting setup threads...")
+        print("[SETUP] Starting setup threads...")
         file_handler_future = executor.submit(
             FileHandler(folder / "out.txt", debug=debug).setup
         )
@@ -46,12 +47,15 @@ def start(*, persistRun=False, debug=False) -> bool:
             Steering(config, debug).setup, file_handler_future
         )
         if load_camera:
+            camera_file_handler_future = executor.submit(
+                FileHandler(folder / "camera_timings.txt", debug=debug).setup
+            )
             camera_future = executor.submit(
-                Camera(config, frames_folder, debug=debug).setup
+                Camera(config, frames_folder, debug=debug).setup, camera_file_handler_future
             )
         else:
             camera_future = executor.submit(
-                VirtualCamera().setup
+                VirtualCamera().setup, VirtualFileWriter()
             )
 
         # steering setup already waits for servo and motor.
@@ -59,48 +63,57 @@ def start(*, persistRun=False, debug=False) -> bool:
         wait(futures)
 
         steering = steering_future.result()
-        file_handler = file_handler_future.result()
         camera = camera_future.result()
+        if not steering.fileWriter:
+            print("[SETUP] Steering fileHandler setup failed")
+            return False
+        if not camera.fileWriter:
+            print("[SETUP] Camera fileHandler setup failed")
+            return False
+        steering_file_handler = steering.fileWriter.result()
+        camera_file_handler = camera.fileWriter.result()
         if not camera:
-            print("[MAIN] Camera setup failed")
+            print("[SETUP] Camera setup failed")
             return False
         if not steering:
-            print("[MAIN] Steering setup failed")
+            print("[SETUP] Steering setup failed")
             return False
-        if not file_handler:
-            print("[MAIN] FileHandler setup failed")
+        if not steering_file_handler:
+            print("[SETUP] Steering FileHandler setup failed")
+            return False
+        if not camera_file_handler:
+            print("[SETUP] Camera FileHandler setup failed")
             return False
 
-        if all([steering, file_handler]):
-            print("[MAIN] Setup threads finished successfully")
-        else:
-            print("[MAIN] Setup failed, quiting")
-            quit()
-        print("[MAIN] Starting workers...")
+        print("[SETUP] Setup threads finished successfully")
+        print("[SETUP] Starting workers...")
 
         steering.startWorker(executor)
-        file_handler.startWorker(executor)
+        steering_file_handler.startWorker(executor)
         camera.startWorker(executor)
+        camera_file_handler.startWorker(executor)
 
         while not steering.getStatus():
             sleep(1)
 
-        print("[MAIN] Steering requested quit, closing threads")
+        print("[SETUP] Steering requested quit, closing threads")
 
         steering.stop()
-        file_handler.stop()
+        steering_file_handler.stop()
         camera.stop()
+        camera_file_handler.stop()
 
         while not all(
             [
-                file_handler.getStatus(),
                 steering.getStatus(),
+                steering_file_handler.getStatus(),
                 camera.getStatus(),
+                camera_file_handler.getStatus(),
             ]
         ):
-            sleep(2)
+            sleep(1)
 
-        print("[MAIN] All threads closed successfully, adios")
+        print("[SETUP] All threads closed successfully, adios")
         return True
 
 
