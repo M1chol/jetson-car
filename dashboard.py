@@ -4,6 +4,26 @@ from postprocess.run import run_pipeline
 app = Flask(__name__)
 pipeline = None
 
+def start_media_server(server_location):
+    import subprocess
+
+    def is_mediamtx_running():
+        result = subprocess.run(
+            ["pgrep", "-f", "mediamtx"],
+            stdout=subprocess.DEVNULL
+        )
+        return result.returncode == 0
+
+    if not is_mediamtx_running():
+        proc = subprocess.Popen(
+            ["./mediamtx"],
+            cwd=server_location
+        )
+        print(f"MediaMTX started {proc.pid}")
+    else:
+        print("MediaMTX is already running")
+
+
 @app.route("/")
 def index():   
     return render_template("dashboard.html")
@@ -86,5 +106,5 @@ def path():
     t = pipeline.result['timestep']
     return jsonify([{"x": xi, "y": yi, "t": ti} for xi, yi, ti in zip(x, y, t)])
 
-if __name__ == "__main__":
+def start_dashboard():
     app.run(host="0.0.0.0")
