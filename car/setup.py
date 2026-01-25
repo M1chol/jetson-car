@@ -70,8 +70,8 @@ def start(*, persistRun=False, debug=False) -> bool:
         if not camera.fileWriter:
             print("[SETUP] Camera fileHandler setup failed")
             return False
-        steering_file_handler = steering.fileWriter.result()
-        camera_file_handler = camera.fileWriter.result()
+        steering_file_handler = steering.fileWriter
+        camera_file_handler = camera.fileWriter
         if not camera:
             print("[SETUP] Camera setup failed")
             return False
