@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 import shutil
-from car.virtualFileHandler import VirtualFileWriter
+from car.virtualFileHandler import VirtualFileHandler
 
 """ Setup and start car components @arg persistRun: bool - if data should be saved to dated folder"""
 def start(*, persistRun=False, debug=False) -> bool:
@@ -55,7 +55,7 @@ def start(*, persistRun=False, debug=False) -> bool:
             )
         else:
             camera_future = executor.submit(
-                VirtualCamera().setup, VirtualFileWriter()
+                VirtualCamera().setup, VirtualFileHandler()
             )
 
         # steering setup already waits for servo and motor.
