@@ -10,7 +10,9 @@ parser.add_argument("--dashboard-dir", help="pass different media server path")
 args = parser.parse_args()
 config = None
 
-if args.dashboard: 
+if args.dashboard:
+    main_thread = Thread(target=start, args=(args.save, args.debug), daemon=True)
+    main_thread.start()
     import dashboard as ds
     from waitress import serve
     serve(ds.app, host="0.0.0.0", port=5000)
@@ -18,6 +20,6 @@ if args.dashboard:
         ds.start_media_server(args.dashboard_dir)
     else:
         ds.start_media_server("/home/m1/Downloads/media")
-
-if not start(persistRun=args.save, debug=args.debug):
-    print("[MAIN] Car setup failed, exiting")
+else:
+    if not start(persistRun=args.save, debug=args.debug):
+        print("[MAIN] Car setup failed, exiting")
