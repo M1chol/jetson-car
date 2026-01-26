@@ -106,11 +106,5 @@ def path():
     t = pipeline.result['timestep']
     return jsonify([{"x": xi, "y": yi, "t": ti} for xi, yi, ti in zip(x, y, t)])
 
-def start_dashboard():
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=False,
-        use_reloader=False,
-        threaded=True,
-    )
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")

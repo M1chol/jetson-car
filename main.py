@@ -12,7 +12,8 @@ config = None
 
 if args.dashboard: 
     import dashboard as ds
-    dashboard_thread = Thread(target=ds.start_dashboard, daemon=True)
+    from waitress import serve
+    serve(ds.app, host="0.0.0.0", port=5000)
     if args.dashboard_dir:
         ds.start_media_server(args.dashboard_dir)
     else:
