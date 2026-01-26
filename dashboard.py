@@ -107,4 +107,10 @@ def path():
     return jsonify([{"x": xi, "y": yi, "t": ti} for xi, yi, ti in zip(x, y, t)])
 
 def start_dashboard():
-    app.run(host="0.0.0.0")
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=False,
+        use_reloader=False,
+        threaded=True,
+    )
