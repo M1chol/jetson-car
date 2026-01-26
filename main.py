@@ -5,7 +5,7 @@ import argparse
 parser = argparse.ArgumentParser(description="Jetson powered autonomus car")
 parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 parser.add_argument("--save", action="store_true", help="Save data to persisted file")
-parser.add_argument("--dashboard", actuion="store_true", help="Enable web dashboard default media path /home/m1/Downloads/media")
+parser.add_argument("--dashboard", action="store_true", help="Enable web dashboard default media path /home/m1/Downloads/media")
 parser.add_argument("--dashboard-dir", help="pass different media server path")
 args = parser.parse_args()
 config = None
