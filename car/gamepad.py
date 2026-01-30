@@ -60,8 +60,12 @@ class Gamepad:
                         print("[GAMEPAD] Close button pressed, quiting...")
                         self.__carStopEvent.set()
                     if button_name == "A" and event.value == 1:
-                        print("[GAMEPAD] Start data collection button pressed")
-                        self.__startDataCollection.set()
+                        if not self.__startDataCollection.is_set():
+                            print("[GAMEPAD] Data collection started")
+                            self.__startDataCollection.set()
+                        else:
+                            print("[GAMEPAD] Data collection stopped")
+                            self.__startDataCollection.clear()
             elif event.type == evdev.ecodes.EV_ABS:
                 if event.code == evdev.ecodes.ABS_X:
                     angle = (event.value / self.__config["PAD_READ_TURN"] - 0.5) * 2 * self.__config["MAX_ANGLE"]
