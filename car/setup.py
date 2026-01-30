@@ -48,7 +48,7 @@ def start(*, persistRun=False, debug=False) -> bool:
         )
         if load_camera:
             camera_file_handler_future = executor.submit(
-                FileHandler(folder / "camera_timings.txt", debug=debug).setup
+                FileHandler(folder / "camera.txt", debug=debug).setup
             )
             camera_future = executor.submit(
                 Camera(config, frames_folder, debug=debug).setup, camera_file_handler_future

@@ -7,7 +7,9 @@ from time import sleep
 import time
 import math
 
+from car.fileHandler import FileHandler
 from car.gamepad import Gamepad
+from car.virtualFileHandler import VirtualFileHandler
 
 
 class Steering:
@@ -16,7 +18,7 @@ class Steering:
         self.__serialMotor = None
         self.stopEvent = threading.Event()
         self.__config = config
-        self.fileWriter = None
+        self.fileWriter: FileHandler | VirtualFileHandler | None = None
         self.__gamepad = (
             Gamepad(self.stopEvent, config, debug)
             if not VIRTUAL_GAMEPAD

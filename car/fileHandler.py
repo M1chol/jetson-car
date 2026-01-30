@@ -31,7 +31,7 @@ class FileHandler:
         print("[WRITER] File writer worker started")
         while not self.stop_event.is_set() or not self.queue.empty:
             try:
-                item = self.queue.get(timeout=0.1)
+                item = self.queue.get(timeout=0.2)
                 item = item.split()
                 if self.DEBUG:
                     print("[WRITER]", item)
@@ -80,10 +80,10 @@ class FileHandler:
         if not self.file:
             print("[WRITER] File not opened cannot start worker")
             return False
-        print("[WRITER] File writer worker started")
+        print("[WRITER] Simple file writer worker started")
         while not self.stop_event.is_set() or not self.queue.empty:
             try:
-                item = self.queue.get(timeout=0.1)
+                item = self.queue.get(timeout=0.2)
                 if self.DEBUG:
                     print("[WRITER]", item)
                 self.file.writelines(item + "\n")

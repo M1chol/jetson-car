@@ -9,3 +9,5 @@ class VirtualFileHandler():
         return
     def getStatus(self) -> bool:
         return True
+    def write(self, data: str) -> None:
+        return

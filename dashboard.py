@@ -19,9 +19,9 @@ def start_media_server(server_location):
             ["./mediamtx"],
             cwd=server_location
         )
-        print(f"MediaMTX started {proc.pid}")
+        print(f"[DASHBOARD] MediaMTX started {proc.pid}")
     else:
-        print("MediaMTX is already running")
+        print("[DASHBOARD] MediaMTX is already running")
 
 
 @app.route("/")
