@@ -13,14 +13,14 @@ from car.virtualFileHandler import VirtualFileHandler
 
 
 class Steering:
-    def __init__(self, config, debug: bool = False, *, VIRTUAL_GAMEPAD=None) -> None:
+    def __init__(self, config, startCollectionEvent: threading.Event, debug: bool = False, *, VIRTUAL_GAMEPAD=None) -> None:
         self.__serialServo = None
         self.__serialMotor = None
         self.stopEvent = threading.Event()
         self.__config = config
         self.fileWriter: FileHandler | VirtualFileHandler | None = None
         self.__gamepad = (
-            Gamepad(self.stopEvent, config, debug)
+            Gamepad(self.stopEvent, startCollectionEvent, config, debug)
             if not VIRTUAL_GAMEPAD
             else VIRTUAL_GAMEPAD
         )

@@ -51,8 +51,7 @@ Description=Autostart service for jetson-car
 [Service]
 Type=forking
 TimeoutStartSec=0
-ExecStart=${PYTHON_PATH} ${PYTHON_SCREEN_PATH} &
-ExecStartPost=${PYTHON_PATH} ${PYTHON_MAIN_PATH}
+ExecStart=${PYTHON_PATH} ${PYTHON_MAIN_PATH}
 Restart=on-failure
 User=$(whoami)
 WorkingDirectory=${PROJECT_PATH}

@@ -5,7 +5,7 @@ import json
 
 
 class FileHandler:
-    def __init__(self, path: Path, *, debug=False) -> None:
+    def __init__(self, path: Path, startEvent: threading.Event, debug=False) -> None:
         self.path = path
         self.encoding = "utf-8"
         self.queue = queue.Queue()
@@ -16,6 +16,7 @@ class FileHandler:
         self.countSimple = 0
         self.countMiss = 0
         self.DEBUG = debug
+        self.startEvent: threading.Event = startEvent
 
     def setup(self):
         self.file = self.path.open("w")
@@ -23,7 +24,8 @@ class FileHandler:
         return self
 
     def write(self, data: str) -> None:
-        self.queue.put(data)
+        if self.startEvent.is_set():
+            self.queue.put(data)
 
     def writeWorker(self) -> bool:
         if not self.file:

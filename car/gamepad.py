@@ -6,7 +6,7 @@ from threading import Thread, Event
 
 
 class Gamepad:
-    def __init__(self, carStopEvent, config, debug: bool = False) -> None:
+    def __init__(self, carStopEvent, startCollectionEvent, config, debug: bool = False) -> None:
         self.__buttonMap = {304: "A", 305: "B", 307: "X", 308: "Y"}
         self.__buttonState = {"A": False, "B": False, "X": False, "Y": False}
         self.__gamepad = None
@@ -16,7 +16,7 @@ class Gamepad:
         self.currentGas = 0
         self.__config = config
         self.__DEBUG = debug
-        self._stopEvent = Event()
+        self.__startDataCollection = startCollectionEvent
         self.__carStopEvent = carStopEvent
 
     def getGamePad(self) -> bool:
@@ -59,7 +59,9 @@ class Gamepad:
                     if button_name == "B" and event.value == 1:
                         print("[GAMEPAD] Close button pressed, quiting...")
                         self.__carStopEvent.set()
-                        self._stopEvent.set()
+                    if button_name == "A" and event.value == 1:
+                        print("[GAMEPAD] Start data collection button pressed")
+                        self.__startDataCollection.set()
             elif event.type == evdev.ecodes.EV_ABS:
                 if event.code == evdev.ecodes.ABS_X:
                     angle = (event.value / self.__config["PAD_READ_TURN"] - 0.5) * 2 * self.__config["MAX_ANGLE"]
@@ -81,14 +83,14 @@ class Gamepad:
                         * self.__config["MAX_SPEED"]
                     )
                     self.currentSpeed = self.currentGas - self.currentBrake
-            if self._stopEvent.is_set():
+            if self.__carStopEvent.is_set():
                 break
         return True
 
     def printData(self) -> None:
         print("PrintData started sleeping 2 seconds...")
         sleep(2)
-        while not self._stopEvent.is_set():
+        while not self.__carStopEvent.is_set():
             os.system("clear")
             print(
                 f"Gas/Brake: {self.currentSpeed:.2f}\n Angle: {self.currentAngle:.2f}"

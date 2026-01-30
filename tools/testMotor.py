@@ -14,25 +14,22 @@ with open("config.json") as file:
         quit()
 
 event = Event()
-gamepad = VirtualGamepad(carStopEvent=event, config=config, debug=False)
+gamepad = VirtualGamepad(carStopEvent=event,startCollectionEvent=event, config=config, debug=False)
 
 with ThreadPoolExecutor() as executor:
-    motor_file_handler_future = executor.submit(FileHandler(Path("motor.txt")).setup)
-    servo_file_handler_future = executor.submit(FileHandler(Path("servo.txt")).setup)
+    file_handler_future = executor.submit(FileHandler(Path("out.txt"), startEvent=event).setup)
     steering_future = executor.submit(
-        Steering(config, debug=True, VIRTUAL_GAMEPAD=gamepad).setup,
-        motor_file_handler_future,
-        servo_file_handler_future,
+        Steering(config, debug=True, startCollectionEvent=event, VIRTUAL_GAMEPAD=gamepad).setup,
+        file_handler_future
     )
     wait([steering_future])
-    motor_file_handler = motor_file_handler_future.result()
-    servo_file_handler = servo_file_handler_future.result()
+    motor_file_handler = file_handler_future.result()
     steer = steering_future.result()
     if not steer:
         print("steering init failed")
         raise Exception
     
-    if all([steer, motor_file_handler, servo_file_handler]):
+    if all([steer, motor_file_handler]):
         print("[MAIN] Setup threads finished successfully")
     else:
         print("[MAIN] Setup failed, quiting")
@@ -40,7 +37,6 @@ with ThreadPoolExecutor() as executor:
 
     steer.startWorker(executor)
     motor_file_handler.startWorker(executor)
-    servo_file_handler.startWorker(executor)
 
     print("Make sure hearbeat is not set")
     steer.STEER_MANUAL = True
@@ -62,4 +58,3 @@ with ThreadPoolExecutor() as executor:
     print("Finish")
     steer.stop()
     motor_file_handler.stop()
-    servo_file_handler.stop()

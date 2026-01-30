@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 import shutil
 from car.virtualFileHandler import VirtualFileHandler
+from threading import Event
 
 """ Setup and start car components @arg persistRun: bool - if data should be saved to dated folder"""
 def start(persistRun=False, dashboardEnabled=False, debug=False) -> bool:
@@ -21,10 +22,6 @@ def start(persistRun=False, dashboardEnabled=False, debug=False) -> bool:
         if not config:
             print("[SETUP] Config file failed to load")
             return False
-
-    load_camera = config["CAMERA"]["ENABLED"]
-    if load_camera:
-        print("[SETUP] Will try to run camera setup")
 
     # Create folder if data should be saved
     if persistRun:
@@ -40,23 +37,17 @@ def start(persistRun=False, dashboardEnabled=False, debug=False) -> bool:
     with ThreadPoolExecutor() as executor:
         # Run setup in pararel
         print("[SETUP] Starting setup threads...")
-        file_handler_future = executor.submit(
-            FileHandler(folder / "out.txt", debug=debug).setup
-        )
-        steering_future = executor.submit(
-            Steering(config, debug).setup, file_handler_future
-        )
+        startDataCollectionEvent = Event()
+        file_handler_future = executor.submit(FileHandler(folder / "out.txt", startEvent=startDataCollectionEvent, debug=debug).setup)
+        steering_future = executor.submit(Steering(config, debug=debug, startCollectionEvent=startDataCollectionEvent).setup, file_handler_future)
+        
+        load_camera = config["CAMERA"]["ENABLED"]
         if load_camera:
-            camera_file_handler_future = executor.submit(
-                FileHandler(folder / "camera.txt", debug=debug).setup
-            )
-            camera_future = executor.submit(
-                Camera(config, frames_folder, stream=dashboardEnabled, debug=debug).setup, camera_file_handler_future
-            )
+            print("[SETUP] Will try to run camera setup")
+            camera_file_handler_future = executor.submit(FileHandler(folder / "camera.txt", startEvent=startDataCollectionEvent, debug=debug).setup)
+            camera_future = executor.submit(Camera(config, frames_folder, stream=dashboardEnabled, debug=debug).setup, camera_file_handler_future)
         else:
-            camera_future = executor.submit(
-                VirtualCamera().setup, VirtualFileHandler()
-            )
+            camera_future = executor.submit(VirtualCamera().setup, VirtualFileHandler())
 
         # steering setup already waits for servo and motor.
         futures: list[Future[Any]] = [steering_future, camera_future]
@@ -72,7 +63,7 @@ def start(persistRun=False, dashboardEnabled=False, debug=False) -> bool:
             return False
         steering_file_handler = steering.fileWriter
         camera_file_handler = camera.fileWriter
-        
+
         if not steering_file_handler:
             print("[SETUP] Steering FileHandler setup failed")
             return False

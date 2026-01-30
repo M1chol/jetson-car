@@ -13,7 +13,7 @@ class Camera:
         self.location = location
         self.fileWriter: FileHandler | VirtualFileHandler | None = None
         self.debug = debug 
-        self.streamEnabled = stream
+        self.streamEnabled = stream or config["CAMERA"]["STREAM"]
         self.pipeline = self.config["CAMERA"]["PIPELINES"]["GST_STREAM" if stream else "GST_BASIC"]
         self.frameQueue = queue.Queue(maxsize=30)
         self.capture = None
