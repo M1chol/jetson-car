@@ -1,10 +1,8 @@
 import queue
 import time
-import os
 from threading import Event
 from concurrent.futures import wait
 
-os.environ["GST_DEBUG"] = "0"
 from car.fileHandler import FileHandler
 from car.virtualFileHandler import VirtualFileHandler
 import cv2
@@ -24,6 +22,9 @@ class Camera:
         self.capture = cv2.VideoCapture(self.pipeline, cv2.CAP_GSTREAMER)
         wait([fileWriterFuture])
         self.fileWriter = fileWriterFuture.result()
+        if not self.capture.isOpened():
+            print("[CAMERA] Failed to open camera device")
+            return None
         return self
 
     def capture_worker(self):

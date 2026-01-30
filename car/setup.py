@@ -12,7 +12,7 @@ import shutil
 from car.virtualFileHandler import VirtualFileHandler
 
 """ Setup and start car components @arg persistRun: bool - if data should be saved to dated folder"""
-def start(*, persistRun=False, debug=False) -> bool:
+def start(persistRun=False, debug=False) -> bool:
     
     # Load config
     print("[SETUP] Loading config file...")
@@ -64,20 +64,15 @@ def start(*, persistRun=False, debug=False) -> bool:
 
         steering = steering_future.result()
         camera = camera_future.result()
-        if not steering.fileWriter:
-            print("[SETUP] Steering fileHandler setup failed")
+        if not steering or not steering.fileWriter:
+            print("[SETUP] Steering setup failed")
             return False
-        if not camera.fileWriter:
-            print("[SETUP] Camera fileHandler setup failed")
+        if not camera or not camera.fileWriter:
+            print("[SETUP] Camera setup failed")
             return False
         steering_file_handler = steering.fileWriter
         camera_file_handler = camera.fileWriter
-        if not camera:
-            print("[SETUP] Camera setup failed")
-            return False
-        if not steering:
-            print("[SETUP] Steering setup failed")
-            return False
+        
         if not steering_file_handler:
             print("[SETUP] Steering FileHandler setup failed")
             return False

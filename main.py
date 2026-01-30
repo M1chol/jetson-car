@@ -36,6 +36,17 @@ def run_dashboard(media_path, shutdown_event):
     shutdown_event.wait()
     
     print("[DASHBOARD] Shutdown signal received, stopping server")
+    ds.mediamtx_process.terminate()
+    try:
+        ds.mediamtx_process.wait(timeout=5)
+        print(f"[DASHBOARD] MediaMTX stopped gracefully")
+    except TimeoutError:
+        # Force kill if graceful shutdown fails
+        ds.mediamtx_process.kill()
+        ds.mediamtx_process.wait()
+        print(f"[DASHBOARD] MediaMTX force killed")
+    
+    ds.mediamtx_process = None
     server.shutdown()
 
 if args.dashboard or args.dashboard_dir:
