@@ -20,11 +20,18 @@ PYTHON_MAIN_PATH="${PROJECT_PATH}/main.py"
 echo "Downloading latest mediamtx release..."
 
 cd ${PROJECT_PATH}/dashboard
+
+
+if [ -f "./mediamtx" ]; then
+    EXISTING_VERSION=$(./mediamtx --version 2>/dev/null || echo "unknown")
+    echo "mediamtx already present: $EXISTING_VERSION"
+    echo "Skipping download"
+
 curl -s https://api.github.com/repos/bluenviron/mediamtx/releases/latest | \
 grep "browser_download_url.*linux_arm64\.tar\.gz" | cut -d '"' -f 4 | \
 xargs curl -LO && \
-tar -xzf mediamtx_linux_arm64.tar.gz && \
-rm mediamtx_linux_arm64.tar.gz
+tar -xzf mediamtx_*_linux_arm64.tar.gz && \
+rm mediamtx_*_linux_arm64.tar.gz
 
 cat <<EOF | sudo tee mediamtx.yaml >/dev/null
 paths:
