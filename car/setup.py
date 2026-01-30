@@ -12,7 +12,7 @@ import shutil
 from car.virtualFileHandler import VirtualFileHandler
 
 """ Setup and start car components @arg persistRun: bool - if data should be saved to dated folder"""
-def start(persistRun=False, debug=False) -> bool:
+def start(persistRun=False, dashboardEnabled=False, debug=False) -> bool:
     
     # Load config
     print("[SETUP] Loading config file...")
@@ -51,7 +51,7 @@ def start(persistRun=False, debug=False) -> bool:
                 FileHandler(folder / "camera.txt", debug=debug).setup
             )
             camera_future = executor.submit(
-                Camera(config, frames_folder, debug=debug).setup, camera_file_handler_future
+                Camera(config, frames_folder, stream=dashboardEnabled, debug=debug).setup, camera_file_handler_future
             )
         else:
             camera_future = executor.submit(

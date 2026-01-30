@@ -13,6 +13,7 @@ class FileHandler:
         self.file = None
         self.countServo = 0
         self.countMotor = 0
+        self.countSimple = 0
         self.countMiss = 0
         self.DEBUG = debug
 
@@ -87,6 +88,7 @@ class FileHandler:
                 if self.DEBUG:
                     print("[WRITER]", item)
                 self.file.writelines(item + "\n")
+                self.countSimple += 1
             except queue.Empty:
                 pass
         self.file.close()
@@ -103,7 +105,7 @@ class FileHandler:
 
     def stop(self) -> None:
         print(
-            f"[WRITER] File writer worker closing wrote {self.countServo} servo lines,",
-            f"{self.countMotor} motor lines and missed {self.countMiss} lines",
+            f"[WRITER] File writer worker closing. Wrote {self.countServo + self.countMotor}",
+            f"(missed {self.countMiss}) advanced lines and {self.countSimple} simple lines",
         )
         self.stop_event.set()

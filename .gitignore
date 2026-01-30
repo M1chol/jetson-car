@@ -3,3 +3,6 @@ __pycache__
 debug.txt
 results/temp
 !results/.empty
+dashboard/LICENSE
+dashboard/mediamtx
+dashboard/mediamtx.yml

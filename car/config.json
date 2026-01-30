@@ -40,7 +40,7 @@
     "JPEG_QUALITY": 90,
     "PIPELINE": "GST_STREAM",
     "PIPELINES": {
-      "GST_BASIC": "nvarguscamerasrc ! video/x-raw(memory:NVMM),width=1640,height=1232,framerate=15/1,format=NV12 ! nvvidconv ! video/x-raw,format=BGRx ! appsink drop=true max-buffers=1 sync=false",
+      "GST_BASIC": "nvarguscamerasrc ! video/x-raw(memory:NVMM),width=1640,height=1232,framerate=20/1,format=NV12 ! nvvidconv ! video/x-raw,format=BGRx ! appsink drop=true max-buffers=1 sync=false",
       "GST_STREAM": "nvarguscamerasrc ! video/x-raw(memory:NVMM),width=1640,height=1232,framerate=20/1,format=NV12 ! nvvidconv ! video/x-raw,format=I420 ! tee name=t ! queue ! x264enc bitrate=1000 speed-preset=ultrafast tune=zerolatency ! h264parse ! flvmux ! rtmpsink location=rtmp://localhost/live t. ! queue !videoconvert !video/x-raw,format=BGR !appsink drop=true max-buffers=1 sync=false"
     }
   }

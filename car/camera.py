@@ -8,23 +8,36 @@ from car.virtualFileHandler import VirtualFileHandler
 import cv2
 
 class Camera:
-    def __init__(self, config, location, debug=False):
+    def __init__(self, config, location, stream: bool, debug=False):
         self.config = config
         self.location = location
         self.fileWriter: FileHandler | VirtualFileHandler | None = None
         self.debug = debug 
-        self.pipeline = self.config["CAMERA"]["PIPELINES"][self.config["CAMERA"]["PIPELINE"]]
+        self.streamEnabled = stream
+        self.pipeline = self.config["CAMERA"]["PIPELINES"]["GST_STREAM" if stream else "GST_BASIC"]
         self.frameQueue = queue.Queue(maxsize=30)
         self.capture = None
         self.stop_event = Event()
 
     def setup(self, fileWriterFuture):
+        if self.streamEnabled:
+            import subprocess
+            def is_mediamtx_running():
+                result = subprocess.run(["pgrep", "-f", "mediamtx"],stdout=subprocess.DEVNULL        )
+                return result.returncode == 0
+            print("[CAMERA] Connecting pipeline to mediamtx")
+            retry_count = 0
+            while retry_count < 6 and not is_mediamtx_running():
+                retry_count += 1
+                print(f"[CAMERA] Waiting for mediamtx server {retry_count}/6...")
+                time.sleep(1)
         self.capture = cv2.VideoCapture(self.pipeline, cv2.CAP_GSTREAMER)
         wait([fileWriterFuture])
         self.fileWriter = fileWriterFuture.result()
         if not self.capture.isOpened():
             print("[CAMERA] Failed to open camera device")
             return None
+        print(f"[CAMERA] Pipeline connected")
         return self
 
     def capture_worker(self):

@@ -19,7 +19,7 @@ def start_media_server():
     if not is_mediamtx_running():
         mediamtx_process = subprocess.Popen(
             ["./mediamtx"],
-            cwd="./dashboard/media_server",
+            cwd="./dashboard",
         )
         print(f"[DASHBOARD] MediaMTX started {mediamtx_process.pid}")
     else:

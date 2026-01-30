@@ -26,18 +26,18 @@ if [ -f "./mediamtx" ]; then
     EXISTING_VERSION=$(./mediamtx --version 2>/dev/null || echo "unknown")
     echo "mediamtx already present: $EXISTING_VERSION"
     echo "Skipping download"
-
-curl -s https://api.github.com/repos/bluenviron/mediamtx/releases/latest | \
-grep "browser_download_url.*linux_arm64\.tar\.gz" | cut -d '"' -f 4 | \
-xargs curl -LO && \
-tar -xzf mediamtx_*_linux_arm64.tar.gz && \
-rm mediamtx_*_linux_arm64.tar.gz
-
-cat <<EOF | sudo tee mediamtx.yaml >/dev/null
+else
+    curl -s https://api.github.com/repos/bluenviron/mediamtx/releases/latest | \
+    grep "browser_download_url.*linux_arm64\.tar\.gz" | cut -d '"' -f 4 | \
+    xargs curl -LO && \
+    tar -xzf mediamtx_*_linux_arm64.tar.gz && \
+    rm mediamtx_*_linux_arm64.tar.gz
+cat > ./mediamtx.yml << 'EOF'
 paths:
   live:
     source: publisher
 EOF
+fi
 
 cd ${PROJECT_PATH}
 echo "Done: mediamtx version = $(./dashboard/mediamtx --version)"

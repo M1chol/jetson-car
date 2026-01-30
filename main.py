@@ -12,9 +12,9 @@ args = parser.parse_args()
 
 shutdown_event = Event()
 
-def run_car(persist_run, debug):
+def run_car(persist_run, dashboard, debug):
     try:
-        result = start(persistRun=persist_run, debug=debug)
+        result = start(persistRun=persist_run, dashboardEnabled=dashboard, debug=debug)
         if not result:
             print("[MAIN] Car setup failed")
     finally:
@@ -48,13 +48,12 @@ def run_dashboard(shutdown_event):
     ds.mediamtx_process = None
     server.shutdown()
 
-if args.dashboard or args.dashboard_dir:
-    media_path = args.dashboard_dir if args.dashboard_dir else "/home/m1/Downloads/media"
-    car_thread = Thread(target=run_car, args=(args.save, args.debug), daemon=True)
+if args.dashboard:
+    car_thread = Thread(target=run_car, args=(args.save, args.dashboard, args.debug), daemon=True)
     car_thread.start()
     
     # Start dashboard (blocks until shutdown_event is set)
-    run_dashboard(media_path, shutdown_event)
+    run_dashboard(shutdown_event)
     print("[MAIN] Exiting")
     sys.exit(0)
 else:
