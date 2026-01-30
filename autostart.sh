@@ -17,6 +17,24 @@ PYTHON_PATH="${PROJECT_PATH}/.venv/bin/python"
 PYTHON_SCREEN_PATH="${PROJECT_PATH}/tools/screen.py"
 PYTHON_MAIN_PATH="${PROJECT_PATH}/main.py"
 
+echo "Downloading latest mediamtx release..."
+
+cd ${PROJECT_PATH}/dashboard
+curl -s https://api.github.com/repos/bluenviron/mediamtx/releases/latest | \
+grep "browser_download_url.*linux_arm64\.tar\.gz" | cut -d '"' -f 4 | \
+xargs curl -LO && \
+tar -xzf mediamtx_linux_arm64.tar.gz && \
+rm mediamtx_linux_arm64.tar.gz
+
+cat <<EOF | sudo tee mediamtx.yaml >/dev/null
+paths:
+  live:
+    source: publisher
+EOF
+
+cd ${PROJECT_PATH}
+echo "Done: mediamtx version = $(./dashboard/mediamtx --version)"
+
 echo "Creating systemd service for $SERVICE_NAME"
 
 cat <<EOF | sudo tee $SERVICE_FILE >/dev/null

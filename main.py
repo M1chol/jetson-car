@@ -23,7 +23,7 @@ def run_car(persist_run, debug):
         shutdown_event.set()
 
 def run_dashboard(media_path, shutdown_event):
-    import dashboard as ds
+    import dashboard.app as ds
     
     ds.start_media_server(media_path)
     from werkzeug.serving import make_server
