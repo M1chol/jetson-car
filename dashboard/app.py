@@ -5,7 +5,7 @@ app = Flask(__name__)
 pipeline = None
 mediamtx_process = None
 
-def start_media_server(server_location):
+def start_media_server():
     global mediamtx_process
     import subprocess
 
@@ -19,7 +19,7 @@ def start_media_server(server_location):
     if not is_mediamtx_running():
         mediamtx_process = subprocess.Popen(
             ["./mediamtx"],
-            cwd=server_location
+            cwd="./dashboard/media_server",
         )
         print(f"[DASHBOARD] MediaMTX started {mediamtx_process.pid}")
     else:

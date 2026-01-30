@@ -8,7 +8,6 @@ parser = argparse.ArgumentParser(description="Jetson powered autonomus car")
 parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 parser.add_argument("--save", action="store_true", help="Save data to persisted file")
 parser.add_argument("--dashboard", action="store_true", help="Enable web dashboard")
-parser.add_argument("--dashboard-dir", help="pass different media server path")
 args = parser.parse_args()
 
 shutdown_event = Event()
@@ -22,10 +21,10 @@ def run_car(persist_run, debug):
         print("[MAIN] Car process ended, signaling shutdown")
         shutdown_event.set()
 
-def run_dashboard(media_path, shutdown_event):
+def run_dashboard(shutdown_event):
     import dashboard.app as ds
     
-    ds.start_media_server(media_path)
+    ds.start_media_server()
     from werkzeug.serving import make_server
     
     server = make_server("0.0.0.0", 5000, ds.app, threaded=True)
