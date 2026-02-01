@@ -49,7 +49,7 @@ class Gamepad:
             print("[GAMEPAD] updateGamepad failed, gamepad is None")
             return False
         for event in self.__gamepad.read_loop():
-            if abs(self.currentAngle) > self.__config["MAX_ANGLE"]:
+            if abs(self.currentAngle) > abs(self.__config["MAX_ANGLE"]):
                 self.currentAngle = 0
                 raise ValueError("Angle exceeds maximum limit")
             if event.type == evdev.ecodes.EV_KEY:
@@ -58,6 +58,9 @@ class Gamepad:
                     self.__buttonState[button_name] = event.value == 1
                     if button_name == "B" and event.value == 1:
                         print("[GAMEPAD] Close button pressed, quiting...")
+                        self.currentAngle = 0
+                        self.currentSpeed = 0
+                        sleep(.5)
                         self.__carStopEvent.set()
                     if button_name == "A" and event.value == 1:
                         if not self.__startDataCollection.is_set():
