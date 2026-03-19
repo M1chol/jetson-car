@@ -1,47 +1,12 @@
 import json
 import re
-import inspect
-from typing import Any, Callable, get_type_hints
-import tools
+from tools import _tools
 
 from ollama import chat as ollama_chat, list as ollama_list
 
 OLLAMA_HOST = "http://localhost:11434"
 MODEL = "gemma3n:e2b"
 MAX_TOOL_ROUNDS = 4
-
-_tools: dict[str, dict] = {}
-
-def tool(description: str):
-    """Decorator to register a function as a callable tool."""
-
-    def decorator(fn: Callable):
-        hints = get_type_hints(fn)
-        sig = inspect.signature(fn)
-
-        params = {}
-        for name, param in sig.parameters.items():
-            hint = hints.get(name, str)
-            type_map = {
-                int: "integer",
-                float: "number",
-                bool: "boolean",
-                str: "string",
-            }
-            params[name] = {
-                "type": type_map.get(hint, "string"),
-                "description": f"Parameter '{name}'",
-                "required": param.default is inspect.Parameter.empty,
-            }
-
-        _tools[fn.__name__] = {
-            "function": fn,
-            "description": description,
-            "parameters": params,
-        }
-        return fn
-
-    return decorator
 
 TOOL_FORMAT = """
 <tool_call>
