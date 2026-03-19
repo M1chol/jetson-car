@@ -5,7 +5,7 @@ import re
 # GStreamer pipeline for single-frame capture
 gst_pipeline = (
     "nvarguscamerasrc ! "
-    "video/x-raw(memory:NVMM),width=1640,height=1232,framerate=15/1,format=NV12 ! "
+    "video/x-raw(memory:NVMM),width=3280,height=2464,framerate=15/1,format=NV12 ! "
     "nvvidconv ! "
     "video/x-raw,format=BGRx ! "
     "videoconvert ! "
