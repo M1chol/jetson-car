@@ -1,8 +1,8 @@
 import json
 import re
 import inspect
-from datetime import datetime
 from typing import Any, Callable, get_type_hints
+import tools
 
 from ollama import chat as ollama_chat, list as ollama_list
 
@@ -11,7 +11,6 @@ MODEL = "gemma3n:e2b"
 MAX_TOOL_ROUNDS = 4
 
 _tools: dict[str, dict] = {}
-
 
 def tool(description: str):
     """Decorator to register a function as a callable tool."""
@@ -44,29 +43,11 @@ def tool(description: str):
 
     return decorator
 
-
-@tool("Get the current date and time")
-def get_current_time() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
-@tool("Perform basic arithmetic: add, subtract, multiply, divide")
-def calculate(expression: str) -> str:
-    try:
-        allowed = set("0123456789+-*/()., ")
-        if not all(c in allowed for c in expression):
-            return "Error: only basic arithmetic is allowed"
-        result = eval(expression, {"__builtins__": {}})  # noqa: S307
-        return str(result)
-    except Exception as e:                                                                                                                           return f"Error: {e}"
-
-
 TOOL_FORMAT = """
 <tool_call>
 {{"name": "<tool_name>", "arguments": {{<key-value pairs as JSON>}}}}
 </tool_call>
 """.strip()
-
 
 def build_system_prompt() -> str:
     tool_docs = []
