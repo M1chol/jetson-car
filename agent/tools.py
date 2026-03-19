@@ -1,8 +1,11 @@
 from datetime import datetime
 import inspect
 from typing import Any, Callable, get_type_hints
+from car.virtualGamepad import VirtualGamepad
+import carSetup
 
 _tools: dict[str, dict] = {}
+gamepad = None
 
 def tool(description: str):
     """Decorator to register a function as a callable tool."""
@@ -39,14 +42,22 @@ def tool(description: str):
 def get_current_time() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+@tool("Initialize the car")
+def start_car() -> str:
+    global gamepad
+    gamepad = VirtualGamepad()
+    status = carSetup.start(gamepad)
+    return "Success" if status else "Failed"
 
-@tool("Perform basic arithmetic: add, subtract, multiply, divide")
-def calculate(expression: str) -> str:
+@tool("Stop the car")
+def stop_car() -> str:
+    status = carSetup.stop()
+    return "Success" if status else "Failed"                                                                                                                      return f"Error: {e}"
+
+@tool("Set the steering angle")
+def set_angle(angle: int) -> str:
     try:
-        allowed = set("0123456789+-*/()., ")
-        if not all(c in allowed for c in expression):
-            return "Error: only basic arithmetic is allowed"
-        result = eval(expression, {"__builtins__": {}})  # noqa: S307
-        return str(result)
-    except Exception as e:                                                                                                                           return f"Error: {e}"
-
+        gamepad.currentAngle = angle
+        return "Success"
+    except:
+        return "Unknown error"
