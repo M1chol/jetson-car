@@ -1,6 +1,7 @@
 import json
 import re
 from tools import _tools
+from carSetup import steering
 
 from ollama import chat as ollama_chat, list as ollama_list
 
@@ -171,6 +172,7 @@ def main():
         if not user_input:
             continue
         if user_input.lower() in {"quit", "exit"}:
+            steering.stop()
             print("Goodbye!")
             break
 

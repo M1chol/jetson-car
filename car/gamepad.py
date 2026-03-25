@@ -107,7 +107,9 @@ class Gamepad:
             )
         os.system("clear")
 
-
+    def stop(self) -> None:
+        self.__carStopEvent.set()
+        
 if __name__ == "__main__":
     config_f = open("config.json")
     config = json.load(config_f)
