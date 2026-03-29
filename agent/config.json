@@ -1,0 +1,19 @@
+{
+  "stt_config": {
+    "microphone_samplerate": 48000,
+    "model": "pl",
+    "blocksize": 8000
+  },
+  "tts_config": {
+    "model": "pl_PL-gosia-medium",
+    "model_dir": "models",
+    "length_scale": 1.2,
+    "noise_scale": 0.8,
+    "noise_w_scale": 0.8,
+    "volume": 0.5,
+    "blocksize": 2048,
+    "buffersize": 20
+  },
+  "ollama_model_name": "gemma3:4b",
+  "ollama_host": "http://localhost:11434"
+}
