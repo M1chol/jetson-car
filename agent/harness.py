@@ -41,14 +41,14 @@ TOOLS
 {tools_block}
 
 ---
-HOW TO USE A TOOL (ONLY WHEN NEEDED)
+If not directly asked, do not use tools
+HOW TO USE A TOOL (ONLY WHEN ASKED)
 To call a tool, output using this exact format:
 <tool_call>
 {{"name": "tool_name", "arguments": {{"param": "value"}}}}
 </tool_call>
 
 Rules:
-- If no tool is needed, answer directly.
 - Only call one tool per response.
 - After a <tool_result> is shown, continue your answer naturally.
 - Never invent tool results; always wait for the actual result.

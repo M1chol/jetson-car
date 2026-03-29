@@ -214,11 +214,6 @@ class Steering:
         timer = time.monotonic()
         while not self.stopEvent.is_set():
             try:
-                if time.monotonic() - timer >= 10:
-                    freq = count / 40
-                    print(f"[STEER] readSerialMotor operating at {freq}Hz")
-                    count = 0
-                    timer = time.monotonic()
                 line = self.__serialMotor.readline()
                 if not line:
                     continue
@@ -255,11 +250,6 @@ class Steering:
         timer = time.monotonic()
         while not self.stopEvent.is_set():
             try:
-                if time.monotonic() - timer >= 10:
-                    freq = count / 10
-                    print(f"[STEER] readSerial operating at {freq}Hz")
-                    count = 0
-                    timer = time.monotonic()
                 line = self.__serialServo.readline()
                 if not line:
                     continue

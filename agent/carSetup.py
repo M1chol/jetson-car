@@ -26,7 +26,7 @@ def start() -> VirtualGamepad:
     executor = ThreadPoolExecutor()
     file_handler_future = executor.submit(FileHandler(Path("out.txt"), startEvent=event).setup)
     steering_future = executor.submit(
-        Steering(config, debug=True,startCollectionEvent=event, VIRTUAL_GAMEPAD=gamepad).setup,
+        Steering(config, debug=False,startCollectionEvent=event, VIRTUAL_GAMEPAD=gamepad).setup,
         file_handler_future,
     )
     wait([steering_future])
@@ -51,10 +51,6 @@ def stop():
     print("[SETUP] Steering requested quit, closing threads")
     if steer:
         steer.stop()
-    
-    while not steer.getStatus():
-        sleep(1)
-    executor.shutdown()
     print("[SETUP] All threads closed successfully, adios")
     return True
 
