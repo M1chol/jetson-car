@@ -1,12 +1,12 @@
 import json
 import re
-from tools import _tools
-from carSetup import steering
+from agent.tools import tools, stop_car_abrupt
+from agent.carSetup import steer
 
 from ollama import chat as ollama_chat, list as ollama_list
 
 OLLAMA_HOST = "http://localhost:11434"
-MODEL = "gemma3n:e2b"
+MODEL = "gemma3:4b"
 MAX_TOOL_ROUNDS = 4
 
 TOOL_FORMAT = """
@@ -17,7 +17,7 @@ TOOL_FORMAT = """
 
 def build_system_prompt() -> str:
     tool_docs = []
-    for name, meta in _tools.items():
+    for name, meta in tools.items():
         param_lines = []
         for pname, pmeta in meta["parameters"].items():
             req = "required" if pmeta["required"] else "optional"
@@ -41,16 +41,16 @@ TOOLS
 {tools_block}
 
 ---
-HOW TO USE A TOOL
-When you need to call a tool, output it on its own line using this exact format:
+HOW TO USE A TOOL (ONLY WHEN NEEDED)
+To call a tool, output using this exact format:
 <tool_call>
 {{"name": "tool_name", "arguments": {{"param": "value"}}}}
 </tool_call>
 
 Rules:
+- If no tool is needed, answer directly.
 - Only call one tool per response.
 - After a <tool_result> is shown, continue your answer naturally.
-- If no tool is needed, just answer directly.
 - Never invent tool results; always wait for the actual result.
 """
 
@@ -75,10 +75,10 @@ def execute_tool(call: dict) -> str:
     name = call.get("name")
     args = call.get("arguments", {})
 
-    if name not in _tools:
+    if name not in tools:
         return f"Error: unknown tool '{name}'"
 
-    fn = _tools[name]["function"]
+    fn = tools[name]["function"]
     try:
         result = fn(**args)
         return str(result)
@@ -167,12 +167,16 @@ def main():
             user_input = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nGoodbye!")
+            if steer:
+                steer.stop()
+            stop_car_abrupt()
             break
 
         if not user_input:
             continue
         if user_input.lower() in {"quit", "exit"}:
-            steering.stop()
+            steer.stop()
+            stop_car_abrupt()
             print("Goodbye!")
             break
 

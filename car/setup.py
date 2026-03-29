@@ -31,7 +31,7 @@ def start(persistRun=False, dashboardEnabled=False, debug=False) -> bool:
     frames_folder = folder / "frames"
 
     if frames_folder.exists():
-        shutil.rmtree(frames_folder)
+        shutil.rmtree(frames_folder, ignore_errors=True)
     frames_folder.mkdir(parents=True, exist_ok=True)
 
     with ThreadPoolExecutor() as executor:

@@ -2,9 +2,11 @@ from datetime import datetime
 import inspect
 from typing import Any, Callable, get_type_hints
 from car.virtualGamepad import VirtualGamepad
-import carSetup
+import agent.carSetup as carSetup
+from threading import Event
+import json
 
-_tools: dict[str, dict] = {}
+tools: dict[str, dict] = {}
 gamepad = None
 
 def tool(description: str):
@@ -29,7 +31,7 @@ def tool(description: str):
                 "required": param.default is inspect.Parameter.empty,
             }
 
-        _tools[fn.__name__] = {
+        tools[fn.__name__] = {
             "function": fn,
             "description": description,
             "parameters": params,
@@ -45,14 +47,19 @@ def get_current_time() -> str:
 @tool("Initialize the car")
 def start_car() -> str:
     global gamepad
-    gamepad = VirtualGamepad()
-    status = carSetup.start(gamepad)
-    return "Success" if status else "Failed"
+    with open("car/config.json") as file:
+        config = json.load(file)
+        if not config:
+            print("Config file failed to load")
+            quit()
+    # car Setup will quit if failed
+    gamepad = carSetup.start(gamepad)
+    return "Success"
 
 @tool("Stop the car")
 def stop_car() -> str:
     status = carSetup.stop()
-    return "Success" if status else "Failed"                                                                                                                      return f"Error: {e}"
+    return "Success" if status else "Failed"
 
 @tool("Set the steering angle")
 def set_angle(angle: int) -> str:
@@ -61,3 +68,6 @@ def set_angle(angle: int) -> str:
         return "Success"
     except:
         return "Unknown error"
+
+def stop_car_abrupt() -> None:
+    carSetup.stop()

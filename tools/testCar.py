@@ -7,14 +7,14 @@ from time import sleep
 from pathlib import Path
 import json
 
-with open("config.json") as file:
+with open("car/config.json") as file:
     config = json.load(file)
     if not config:
         print("Config file failed to load")
         quit()
 
 event = Event()
-gamepad = VirtualGamepad(carStopEvent=event,startCollectionEvent=event, config=config, debug=False)
+gamepad = VirtualGamepad(carStopEvent=event,startCollectionEvent=event, config=config, debug=True)
 
 with ThreadPoolExecutor() as executor:
     file_handler_future = executor.submit(FileHandler(Path("out.txt"), startEvent=event).setup)

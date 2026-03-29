@@ -7,51 +7,54 @@ from pathlib import Path
 import shutil
 from threading import Event
 from car.virtualGamepad import VirtualGamepad
+from car.fileHandler import FileHandler
 
-steering = None
-pool = None
+steer = None
+executor = None
 """ Setup and start car components @arg persistRun: bool - if data should be saved to dated folder"""
-def start(pad: VirtualGamepad, debug=False) -> bool:
-    global steering, pool
-    # Load config
-    print("[SETUP] Loading config file...")
+def start(debug=False) -> VirtualGamepad:
+    global steer, executor 
     with open("car/config.json") as file:
         config = json.load(file)
         if not config:
-            print("[SETUP] Config file failed to load")
-            return False
+            print("Config file failed to load")
+            quit()
 
-    folder = Path("results/temp")
-    frames_folder = folder / "frames"
+    event = Event()
+    gamepad = VirtualGamepad(carStopEvent=event,startCollectionEvent=event, config=config, debug=False)
 
-    if frames_folder.exists():
-        shutil.rmtree(frames_folder)
-    frames_folder.mkdir(parents=True, exist_ok=True)
+    executor = ThreadPoolExecutor()
+    file_handler_future = executor.submit(FileHandler(Path("out.txt"), startEvent=event).setup)
+    steering_future = executor.submit(
+        Steering(config, debug=False,startCollectionEvent=event, VIRTUAL_GAMEPAD=gamepad).setup,
+        file_handler_future,
+    )
+    wait([steering_future])
+    motor_file_handler = file_handler_future.result()
+    steer = steering_future.result()
+    if not steer:
+        print("steering init failed")
+        raise Exception
 
-    pool = ThreadPoolExecutor()
-    steering_future = pool.submit(Steering(config, debug=debug, startCollectionEvent=Event(), VIRTUAL_GAMEPAD=pad).setup)
-    print("[SETUP] Starting setup threads...")
-    futures: list[Future[Any]] = [steering_future]
-    wait(futures)
-    steering = steering_future.result()
-    if not steering or not steering.fileWriter:
-        print("[SETUP] Steering setup failed")
-        return False
+    if all([steer, motor_file_handler]):
+        print("[MAIN] Setup threads finished successfully")
+    else:
+        print("[MAIN] Setup failed, quiting")
+        quit()
 
-    print("[SETUP] Setup threads finished successfully")
-    print("[SETUP] Starting workers...")
-
-    steering.startWorker(pool)
-    return True
+    steer.startWorker(executor)
+    motor_file_handler.startWorker(executor)
+    return gamepad
 
 def stop():
+    global steer, executor
     print("[SETUP] Steering requested quit, closing threads")
-
-    steering.stop()
+    if steer:
+        steer.stop()
     
-    while not steering.getStatus():
+    while not steer.getStatus():
         sleep(1)
-    pool.shutdown()
+    executor.shutdown()
     print("[SETUP] All threads closed successfully, adios")
     return True
 
