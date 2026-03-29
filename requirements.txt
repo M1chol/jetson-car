@@ -9,3 +9,6 @@ flask
 opencv-stubs
 waitress
 ollama
+sounddevice
+piper
+vosk
