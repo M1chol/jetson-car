@@ -1,12 +1,19 @@
 import json
 import re
+import os
+
 from agent.tools import tools, stop_car_abrupt
 from agent.carSetup import steer
 
 from ollama import chat as ollama_chat, list as ollama_list
 
-OLLAMA_HOST = "http://localhost:11434"
-MODEL = "gemma3:4b"
+
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
+with open(CONFIG_PATH, encoding="utf-8") as f:
+    _config = json.load(f)
+
+OLLAMA_HOST = _config.get("ollama_host", "http://localhost:11434")
+MODEL = _config.get("ollama_model_name", "gemma3:4b")
 MAX_TOOL_ROUNDS = 4
 
 TOOL_FORMAT = """
@@ -14,6 +21,7 @@ TOOL_FORMAT = """
 {{"name": "<tool_name>", "arguments": {{<key-value pairs as JSON>}}}}
 </tool_call>
 """.strip()
+
 
 def build_system_prompt() -> str:
     tool_docs = []
@@ -24,9 +32,7 @@ def build_system_prompt() -> str:
             param_lines.append(
                 f"  - {pname} ({pmeta['type']}, {req}): {pmeta['description']}"
             )
-        params_str = (
-            "\n".join(param_lines) if param_lines else "  (no parameters)"
-        )
+        params_str = "\n".join(param_lines) if param_lines else "  (no parameters)"
         tool_docs.append(
             f"### {name}\n"
             f"Description: {meta['description']}\n"
@@ -84,6 +90,8 @@ def execute_tool(call: dict) -> str:
         return str(result)
     except TypeError as e:
         return f"Error calling '{name}': {e}"
+    except Exception as e:
+        return f"Error while executing '{name}': {e}"
 
 
 def chat(messages: list[dict], silent: bool = False) -> str:
@@ -105,33 +113,41 @@ def chat(messages: list[dict], silent: bool = False) -> str:
             print(token, end="", flush=True)
 
     if not silent:
-        print()  # newline after streamed response
+        print()
 
     return "".join(chunks)
 
 
-def run_agent(user_message: str) -> None:
+def run_agent(user_message: str, silent: bool = False) -> str:
     messages = [
         {"role": "system", "content": build_system_prompt()},
         {"role": "user", "content": user_message},
     ]
 
+    last_response = ""
+
     for round_num in range(MAX_TOOL_ROUNDS):
-        print(f"[harness] Round {round_num + 1} — calling model...")
-        response = chat(messages)
+        if not silent:
+            print(f"[harness] Round {round_num + 1} — calling model...")
+
+        response = chat(messages, silent=silent)
+        last_response = response
 
         call = extract_tool_call(response)
         if call is None:
-            # No tool call — streamed final answer already printed
-            return
+            return response
 
         tool_name = call.get("name", "?")
-        print(
-            f"\n[harness] Executing tool: "
-            f"{tool_name}({call.get('arguments', {})})"
-        )
+        if not silent:
+            print(
+                f"\n[harness] Executing tool: "
+                f"{tool_name}({call.get('arguments', {})})"
+            )
+
         result = execute_tool(call)
-        print(f"[harness] Tool result: {result}\n")
+
+        if not silent:
+            print(f"[harness] Tool result: {result}\n")
 
         messages.append({"role": "assistant", "content": response})
         messages.append(
@@ -150,6 +166,7 @@ def run_agent(user_message: str) -> None:
         )
 
     print("[harness] Max tool rounds reached without a final answer.")
+    return last_response
 
 
 def main():
@@ -175,7 +192,8 @@ def main():
         if not user_input:
             continue
         if user_input.lower() in {"quit", "exit"}:
-            steer.stop()
+            if steer:
+                steer.stop()
             stop_car_abrupt()
             print("Goodbye!")
             break

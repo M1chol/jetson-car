@@ -1,24 +1,29 @@
+import os
 import sounddevice as sd
 import re
-from sounddevice import CallbackFlags
 from piper.voice import PiperVoice
 from piper.config import SynthesisConfig
 from queue import Empty, Queue
 import numpy as np
 import json
 import threading
-from time import sleep
 
 
 class ttsWrapper:
     def __init__(self) -> None:
-        with open("agent/config.json") as f:
+        config_path = os.path.join(os.path.dirname(__file__), "config.json")
+        with open(config_path, encoding="utf-8") as f:
             self.__config = json.load(f)["tts_config"]
+
         if not self.__config:
             raise FileNotFoundError("config file not found")
-        self.__model_path = (
-            self.__config["model_dir"] + "/" + self.__config["model"] + ".onnx"
+
+        self.__model_path = os.path.join(
+            os.path.dirname(__file__),
+            self.__config["model_dir"],
+            self.__config["model"] + ".onnx",
         )
+
         self.__voice = PiperVoice.load(self.__model_path)
         self.__syn_config = SynthesisConfig(
             length_scale=self.__config["length_scale"],
@@ -44,9 +49,20 @@ class ttsWrapper:
         self.__audio_thread.start()
 
     def __del__(self):
-        self.__audio_thread_stop_event.set()
-        self.__stream.stop()
-        self.__stream.close()
+        try:
+            self.__audio_thread_stop_event.set()
+        except Exception:
+            pass
+
+        try:
+            self.__stream.stop()
+        except Exception:
+            pass
+
+        try:
+            self.__stream.close()
+        except Exception:
+            pass
 
     def callback(self, outdata, frames, time, status):
         wrote = 0
@@ -60,7 +76,6 @@ class ttsWrapper:
             wrote += take
             return take
 
-        # First add leftover bytes
         if len(self.__leftover) > 0 and wrote < frames:
             taken = copy_from(self.__leftover)
             if taken < len(self.__leftover):
@@ -73,11 +88,12 @@ class ttsWrapper:
                 data = self.__audio_queue.get_nowait()
             except Empty:
                 outdata[wrote:frames] = 0
-                # self.__queue_is_empty = True
                 return
+
             data = data.reshape(-1, 1)
             if data.size == 0:
                 continue
+
             taken = copy_from(data)
             if taken < len(data):
                 self.__leftover = data[taken:]
@@ -86,15 +102,20 @@ class ttsWrapper:
     def __push_text(self, text: str) -> None:
         if not text.strip():
             return
-        for audio_chunk in self.__voice.synthesize(text, syn_config=self.__syn_config):
+
+        for audio_chunk in self.__voice.synthesize(
+            text, syn_config=self.__syn_config
+        ):
             audio_bytes = audio_chunk.audio_int16_array
             self.__audio_queue.put(audio_bytes)
 
     def __worker(self):
         print("[TTS] Worker started")
         sentence = ""
+
         while not self.__audio_thread_stop_event.is_set():
             token = self.__text_queue.get()
+
             if (
                 token is None
                 or token in [".", "!", "?", ","]
@@ -106,11 +127,14 @@ class ttsWrapper:
                     self.__push_text(sentence)
                 sentence = ""
             else:
-                sentence += token
+                if sentence and not sentence.endswith(" "):
+                    sentence += " "
+                sentence += token.strip()
 
     def speak(self, text: str | None):
         res = None
         if text:
-            pattern = r'[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ.,!? ]+'
-            res = re.sub(pattern, '', text)
+            pattern = r"[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ.,!? \-]+"
+            res = re.sub(pattern, "", text).strip()
+
         self.__text_queue.put(res)
