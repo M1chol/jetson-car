@@ -47,13 +47,8 @@ def get_current_time() -> str:
 @tool("Initialize the car")
 def start_car() -> str:
     global gamepad
-    with open("car/config.json") as file:
-        config = json.load(file)
-        if not config:
-            print("Config file failed to load")
-            quit()
     # car Setup will quit if failed
-    gamepad = carSetup.start(gamepad)
+    gamepad = carSetup.start()
     return "Success"
 
 @tool("Stop the car")
@@ -66,6 +61,14 @@ def set_angle(angle: int) -> str:
     try:
         gamepad.currentAngle = angle
         return "Success"
+    except:
+        return "Unknown error"
+
+@tool("Set the motor speed")
+def set_speed(speed: int) -> str:
+    try:
+        gamepad.currentSpeed = speed
+        return f"Success, speed set to {speed}"
     except:
         return "Unknown error"
 

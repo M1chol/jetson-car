@@ -171,12 +171,12 @@ class Steering:
         # Set heartbeat
         self.__writeMotor(
             self.__generateMotorCommand(
-                "CMD_HEARTBEAT_TIME", time=str(self.__config["MOTOR_HEARTBEAT_TIME"])
+                "CMD_HEARTBEAT_TIME", time=self.__config["MOTOR_HEARTBEAT_TIME"]
             )
         )
-        self.__serialMotor.readline().decode("utf-8").strip()
         while not self.stopEvent.is_set():
             if self.STEER_MANUAL:
+                sleep(0.1)
                 continue
             speed = self.__gamepad.currentSpeed
             angle = self.__gamepad.currentAngle
@@ -297,10 +297,9 @@ class Steering:
         if not self.__serialMotor:
             print("[STEER] Stop failed serial motor connection is Null")
             return False
-        command = "CMD90;90"
         self.__setMotors([0, 0, 0, 0])
         for i in range(4):
-            self.__generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
+            command = self.__generateMotorCommand("CMD_CHANGE_Disable", id=i + 1)
             self.__serialMotor.write(command.encode() + b"\n")
         self.stopEvent.set()
         print("[STEER] requested thread close")

@@ -12,7 +12,7 @@ from car.fileHandler import FileHandler
 steer = None
 executor = None
 """ Setup and start car components @arg persistRun: bool - if data should be saved to dated folder"""
-def start(debug=False) -> VirtualGamepad:
+def start() -> VirtualGamepad:
     global steer, executor 
     with open("car/config.json") as file:
         config = json.load(file)
@@ -26,7 +26,7 @@ def start(debug=False) -> VirtualGamepad:
     executor = ThreadPoolExecutor()
     file_handler_future = executor.submit(FileHandler(Path("out.txt"), startEvent=event).setup)
     steering_future = executor.submit(
-        Steering(config, debug=False,startCollectionEvent=event, VIRTUAL_GAMEPAD=gamepad).setup,
+        Steering(config, debug=True,startCollectionEvent=event, VIRTUAL_GAMEPAD=gamepad).setup,
         file_handler_future,
     )
     wait([steering_future])

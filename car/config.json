@@ -27,7 +27,7 @@
   "command_map": {
       "CMD_CHANGE_Enable": {"T": 11002, "id": 1},
       "CMD_CHANGE_Disable": {"T": 11003, "id": 1},
-      "CMD_DDSM_CTRL": {"T": 10010, "id": 1, "cmd": 50, "act": 3},
+      "CMD_DDSM_CTRL": {"T": 10010, "id": 1, "cmd": 50, "act": 0},
       "CMD_DDSM_CHANGE_ID": {"T": 10011, "id": 1},
       "CMD_DDSM_ID_CHECK": {"T": 10031},
       "CMD_CHANGE_MODE": {"T": 10012, "id": 1, "mode": 2},
