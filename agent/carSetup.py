@@ -24,7 +24,7 @@ def start() -> VirtualGamepad:
     gamepad = VirtualGamepad(carStopEvent=event,startCollectionEvent=event, config=config, debug=False)
 
     executor = ThreadPoolExecutor()
-    file_handler_future = executor.submit(FileHandler(Path("out.txt"), startEvent=event).setup)
+    file_handler_future = executor.submit(FileHandler(Path("results/temp/out.txt"), startEvent=event).setup)
     steering_future = executor.submit(
         Steering(config, debug=False,startCollectionEvent=event, VIRTUAL_GAMEPAD=gamepad).setup,
         file_handler_future,
