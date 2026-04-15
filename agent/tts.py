@@ -1,12 +1,13 @@
 import os
-import sounddevice as sd
-import re
-from piper.voice import PiperVoice
-from piper.config import SynthesisConfig
-from queue import Empty, Queue
-import numpy as np
 import json
 import threading
+from queue import Empty, Queue
+
+import numpy as np
+import re
+import sounddevice as sd
+from piper.config import SynthesisConfig
+from piper.voice import PiperVoice
 
 
 class ttsWrapper:
@@ -49,8 +50,16 @@ class ttsWrapper:
         self.__audio_thread.start()
 
     def __del__(self):
+        self.close()
+
+    def close(self) -> None:
         try:
             self.__audio_thread_stop_event.set()
+        except Exception:
+            pass
+
+        try:
+            self.__text_queue.put_nowait(None)
         except Exception:
             pass
 
@@ -110,31 +119,18 @@ class ttsWrapper:
             self.__audio_queue.put(audio_bytes)
 
     def __worker(self):
-        print("[TTS] Worker started")
-        sentence = ""
-
         while not self.__audio_thread_stop_event.is_set():
-            token = self.__text_queue.get()
+            sentence = self.__text_queue.get()
+            if sentence is None:
+                continue
 
-            if (
-                token is None
-                or token in [".", "!", "?", ","]
-                or len(sentence.split()) > 5
-            ):
-                if token:
-                    sentence += token
-                if sentence:
-                    self.__push_text(sentence)
-                sentence = ""
-            else:
-                if sentence and not sentence.endswith(" "):
-                    sentence += " "
-                sentence += token.strip()
+            self.__push_text(sentence)
 
     def speak(self, text: str | None):
-        res = None
-        if text:
-            pattern = r"[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ.,!? \-]+"
-            res = re.sub(pattern, "", text).strip()
+        if not text:
+            return
 
-        self.__text_queue.put(res)
+        pattern = r"[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ.,!?;:()\"' \-]+"
+        sanitized = re.sub(pattern, "", text).strip()
+        if sanitized:
+            self.__text_queue.put(sanitized)

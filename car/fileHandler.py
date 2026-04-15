@@ -103,7 +103,7 @@ class FileHandler:
             executor.submit(self.writeWorker)
 
     def getStatus(self):
-        return self.stop_event
+        return self.stop_event.is_set()
 
     def stop(self) -> None:
         print(

@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import Any
+from typing import Any, Callable
 
 from ollama import chat as ollama_chat, list as ollama_list
 
@@ -134,7 +134,68 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
 
         return "".join(chunks)
 
-    def ask(self, user_message: str, silent: bool | None = None) -> str:
+    def stream_chat(
+        self,
+        messages: list[dict],
+        silent: bool | None = None,
+        on_text: Callable[[str], None] | None = None,
+    ) -> str:
+        if silent is None:
+            silent = self.silent
+
+        chunks: list[str] = []
+        mode = "undecided"
+        tool_prefix = "<tool_call>"
+
+        if not silent:
+            print("Atom: ", end="", flush=True)
+
+        for part in ollama_chat(
+            model=self.model,
+            messages=messages,
+            stream=True,
+            options={"host": self.ollama_host},
+        ):
+            token = part["message"]["content"]
+            chunks.append(token)
+
+            if not silent:
+                print(token, end="", flush=True)
+
+            if on_text is None:
+                continue
+
+            if mode == "text":
+                on_text(token)
+                continue
+
+            candidate = "".join(chunks).lstrip()
+            lowered = candidate.lower()
+
+            if not lowered:
+                continue
+
+            if lowered.startswith(tool_prefix):
+                mode = "tool"
+                continue
+
+            if tool_prefix.startswith(lowered):
+                continue
+
+            mode = "text"
+            on_text(candidate)
+
+        if not silent:
+            print()
+
+        return "".join(chunks)
+
+    def ask(
+        self,
+        user_message: str,
+        silent: bool | None = None,
+        on_text: Callable[[str], None] | None = None,
+    ) -> str:
         if silent is None:
             silent = self.silent
 
@@ -145,11 +206,12 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
 
         last_response = ""
 
-        for round_num in range(self.max_tool_rounds):
-            if not silent:
-                print(f"[harness] Round {round_num + 1} — calling model...")
-
-            response = self.chat(messages, silent=silent)
+        for _ in range(self.max_tool_rounds):
+            response = self.stream_chat(
+                messages,
+                silent=silent,
+                on_text=on_text,
+            )
             last_response = response
 
             call = self.extract_tool_call(response)
@@ -158,16 +220,7 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
 
             tool_name = call.get("name", "?")
 
-            if not silent:
-                print(
-                    f"\n[harness] Executing tool: "
-                    f"{tool_name}({call.get('arguments', {})})"
-                )
-
             result = self.execute_tool(call)
-
-            if not silent:
-                print(f"[harness] Tool result: {result}\n")
 
             messages.append({"role": "assistant", "content": response})
             messages.append(
@@ -184,9 +237,6 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
                     ),
                 }
             )
-
-        if not silent:
-            print("[harness] Max tool rounds reached without a final answer.")
 
         return last_response
 

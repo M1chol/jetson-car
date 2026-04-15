@@ -3,7 +3,6 @@ import sounddevice as sd
 import json
 import threading
 import queue
-import sys
 import os
 
 
@@ -57,12 +56,9 @@ class sttWrapper:
             pass
 
     def __callback(self, indata, frames, time, status):
-        if status:
-            print(status, file=sys.stderr)
         self.__queue.put(bytes(indata))
 
     def __worker(self, callback):
-        print("[STT] Worker started")
         while not self.__listening_thread_stop_event.is_set():
             data = self.__queue.get()
             if self.__recorder.AcceptWaveform(data):
