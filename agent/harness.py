@@ -146,9 +146,21 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
         chunks: list[str] = []
         mode = "undecided"
         tool_prefix = "<tool_call>"
+        displayed_prefix = False
 
-        if not silent:
-            print("Atom: ", end="", flush=True)
+        def emit_text(text: str) -> None:
+            nonlocal displayed_prefix
+            if not text:
+                return
+
+            if not silent:
+                if not displayed_prefix:
+                    print("Atom: ", end="", flush=True)
+                    displayed_prefix = True
+                print(text, end="", flush=True)
+
+            if on_text is not None:
+                on_text(text)
 
         for part in ollama_chat(
             model=self.model,
@@ -159,14 +171,8 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
             token = part["message"]["content"]
             chunks.append(token)
 
-            if not silent:
-                print(token, end="", flush=True)
-
-            if on_text is None:
-                continue
-
             if mode == "text":
-                on_text(token)
+                emit_text(token)
                 continue
 
             candidate = "".join(chunks).lstrip()
@@ -183,9 +189,15 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
                 continue
 
             mode = "text"
-            on_text(candidate)
+            emit_text(candidate)
 
-        if not silent:
+        if mode == "undecided":
+            candidate = "".join(chunks).lstrip()
+            if candidate:
+                mode = "text"
+                emit_text(candidate)
+
+        if not silent and displayed_prefix:
             print()
 
         return "".join(chunks)
