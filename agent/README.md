@@ -6,6 +6,12 @@ Z poziomu głównego folderu `jetson-car`
 python -m agent.start
 ```
 
+# Pobieranie modelu TTS
+```
+mkdir agent/models
+python3 -m piper.download_voices pl_PL-gosia-medium --download-dir agent/models/
+```
+
 # Minimalna instrukcja konfiguracji słuchawek Bluetooth z mikrofonem
 
 Zainstaluj `bluetuith` jeśli nie jest dostępne
