@@ -14,11 +14,17 @@ class SentenceStreamer:
     def __init__(self, tts: ttsWrapper) -> None:
         self.tts = tts
         self.buffer = ""
+        self.is_displaying = False
 
     def push(self, chunk: str) -> None:
         if not chunk:
             return
 
+        if not self.is_displaying:
+            print("Atom: ", end="", flush=True)
+            self.is_displaying = True
+
+        print(chunk, end="", flush=True)
         self.buffer += chunk
         self.__emit_complete_sentences()
 
@@ -27,9 +33,13 @@ class SentenceStreamer:
         self.buffer = ""
         if remainder:
             self.tts.speak(remainder)
+        if self.is_displaying:
+            print()
+            self.is_displaying = False
 
     def reset(self) -> None:
         self.buffer = ""
+        self.is_displaying = False
 
     def __emit_complete_sentences(self) -> None:
         while True:
@@ -45,7 +55,7 @@ class SentenceStreamer:
 
 class VoiceApp:
     def __init__(self) -> None:
-        self.harness = AtomHarness(silent=False)
+        self.harness = AtomHarness(silent=True)
         self.tts = ttsWrapper()
         self.tts_streamer = SentenceStreamer(self.tts)
         self.stop_event = threading.Event()
@@ -57,7 +67,10 @@ class VoiceApp:
             return
 
         if not is_final:
+            print(f"\rYou: {text}", end="", flush=True)
             return
+
+        print(f"\rYou: {text}")
 
         if text.lower() in {"quit", "exit", "stop program", "zakończ", "wyjdz"}:
             self.stop_event.set()
@@ -71,7 +84,7 @@ class VoiceApp:
             self.tts_streamer.reset()
             self.harness.ask(
                 text,
-                silent=False,
+                silent=True,
                 on_text=self.tts_streamer.push,
             )
             self.tts_streamer.flush()
