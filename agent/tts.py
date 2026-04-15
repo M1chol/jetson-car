@@ -45,6 +45,8 @@ class ttsWrapper:
         self.__leftover = np.empty((0, 1), dtype=np.int16)
         self.__audio_thread = threading.Thread(target=self.__worker, daemon=True)
         self.__audio_thread_stop_event = threading.Event()
+        self.__interrupt_event = threading.Event()
+        self.__state_lock = threading.Lock()
 
         self.__stream.start()
         self.__audio_thread.start()
@@ -53,6 +55,8 @@ class ttsWrapper:
         self.close()
 
     def close(self) -> None:
+        self.stop()
+
         try:
             self.__audio_thread_stop_event.set()
         except Exception:
@@ -108,6 +112,13 @@ class ttsWrapper:
                 self.__leftover = data[taken:]
                 return
 
+    def __clear_queue(self, queue: Queue) -> None:
+        while True:
+            try:
+                queue.get_nowait()
+            except Empty:
+                return
+
     def __push_text(self, text: str) -> None:
         if not text.strip():
             return
@@ -115,6 +126,8 @@ class ttsWrapper:
         for audio_chunk in self.__voice.synthesize(
             text, syn_config=self.__syn_config
         ):
+            if self.__interrupt_event.is_set():
+                return
             audio_bytes = audio_chunk.audio_int16_array
             self.__audio_queue.put(audio_bytes)
 
@@ -126,6 +139,13 @@ class ttsWrapper:
 
             self.__push_text(sentence)
 
+    def stop(self) -> None:
+        self.__interrupt_event.set()
+        with self.__state_lock:
+            self.__clear_queue(self.__text_queue)
+            self.__clear_queue(self.__audio_queue)
+            self.__leftover = self.__leftover[0:0]
+
     def speak(self, text: str | None):
         if not text:
             return
@@ -133,4 +153,5 @@ class ttsWrapper:
         pattern = r"[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ.,!?;:()\"' \-]+"
         sanitized = re.sub(pattern, "", text).strip()
         if sanitized:
+            self.__interrupt_event.clear()
             self.__text_queue.put(sanitized)

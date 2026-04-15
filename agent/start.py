@@ -67,6 +67,8 @@ class VoiceApp:
             return
 
         if not is_final:
+            if not self.is_processing:
+                self.tts.stop()
             print(f"\rYou: {text}", end="", flush=True)
             return
 
