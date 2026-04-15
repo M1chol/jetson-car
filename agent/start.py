@@ -1,90 +1,75 @@
-import os
-import sys
+import threading
 import time
-import json
 
+from agent.harness import AtomHarness
 from agent.stt import sttWrapper
-from agent.tts import ttsWrapper
-import agent.harness as harness
 
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
+class VoiceApp:
+    def __init__(self) -> None:
+        self.harness = AtomHarness(silent=True)
+        self.stop_event = threading.Event()
+        self.is_processing = False
 
-
-def load_config():
-    with open(CONFIG_PATH, encoding="utf-8") as f:
-        return json.load(f)
-
-
-def main():
-    load_config()
-
-    try:
-        harness.ollama_list()
-    except ConnectionError as e:
-        print(f"Cannot reach Ollama: {e}")
-        return
-
-    print("Initializing TTS and STT...")
-    tts = ttsWrapper()
-
-    state = {
-        "text": "",
-        "ready": False,
-    }
-
-    def stt_callback(text, is_final):
-        clean = text.strip()
-        if not clean:
+    def on_speech(self, text: str, is_final: bool) -> None:
+        text = text.strip()
+        if not text:
             return
 
-        if is_final:
-            state["text"] = clean
-            state["ready"] = True
-            sys.stdout.write("\r" + " " * 120 + "\r")
-            print(f"Ty: {clean}")
-        else:
-            sys.stdout.write(f"\rNasłuch: {clean}")
-            sys.stdout.flush()
+        if not is_final:
+            print(f"\r[partial] {text}", end="", flush=True)
+            return
 
-    stt = sttWrapper(stt_callback)
+        print(f"\n[final] {text}")
 
-    print("Atom Voice Agent Ready. Speak Polish to interact.")
-    print("Press Ctrl+C to stop.\n")
+        if text.lower() in {"quit", "exit", "stop program", "zakończ", "wyjdz"}:
+            print("[main] Exit command received.")
+            self.stop_event.set()
+            return
 
-    try:
-        while True:
-            if state["ready"]:
-                user_msg = state["text"]
-                state["ready"] = False
-                state["text"] = ""
+        if self.is_processing:
+            print("[main] Still processing previous command, ignoring.")
+            return
 
-                response = harness.run_agent(user_msg, silent=False)
-
-                if response:
-                    tts.speak(response)
-                    tts.speak(None)
-
-                print("\n[Waiting for speech...]")
-
-            time.sleep(0.05)
-
-    except KeyboardInterrupt:
-        print("\nStopping...")
-    finally:
+        self.is_processing = True
         try:
-            if harness.steer:
-                harness.steer.stop()
-        except Exception:
-            pass
+            response = self.harness.ask(text, silent=False)
+            print(f"\n[main] Final response: {response}\n")
+        except Exception as e:
+            print(f"[main] Error while processing speech: {e}")
+        finally:
+            self.is_processing = False
+
+    def run(self) -> None:
+        if not self.harness.check_connection():
+            return
+
+        print("Voice control started.")
+        print("Speak a command.")
+        print("Say 'quit' or 'exit' to stop.\n")
+
+        stt = sttWrapper(self.on_speech)
 
         try:
-            harness.stop_car_abrupt()
-        except Exception:
-            pass
+            while not self.stop_event.is_set():
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print("\n[main] Keyboard interrupt received.")
+        finally:
+            self.stop_event.set()
+            self.harness.cleanup()
 
-        del stt
-        del tts
+            try:
+                del stt
+            except Exception:
+                pass
+
+            print("[main] Goodbye!")
+
+
+def main() -> None:
+    app = VoiceApp()
+    app.run()
 
 
 if __name__ == "__main__":

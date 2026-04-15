@@ -54,8 +54,7 @@ def tool(
 def require_gamepad() -> VirtualGamepad:
     if gamepad is None:
         raise RuntimeError(
-            "Samochód nie jest uruchomiony. Najpierw użyj narzędzia "
-            "'uruchom_samochod'."
+            "Samochód nie jest uruchominy"
         )
     return gamepad
 
@@ -74,7 +73,6 @@ def pobierz_aktualny_czas() -> dict[str, Any]:
 @tool(
     description=(
         "Uruchamia kontroler samochodu i przygotowuje pojazd do jazdy. "
-        "Tego narzędzia należy użyć przed ustawianiem skrętu lub prędkości."
     ),
 )
 def uruchom_samochod() -> dict[str, Any]:
@@ -151,8 +149,7 @@ def ustaw_kat(angle: int) -> dict[str, Any]:
 
 @tool(
     description=(
-        "Ustawia prędkość samochodu jako liczbę całkowitą odpowiednią dla "
-        "aktualnego systemu sterowania."
+        "Ustawia prędkość samochodu jako liczbę całkowitą "
     ),
     parameter_descriptions={
         "speed": "Docelowa prędkość jako liczba całkowita.",

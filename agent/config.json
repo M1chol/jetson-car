@@ -1,6 +1,6 @@
 {
   "stt_config": {
-    "microphone_samplerate": 48000,
+    "microphone_samplerate": 16000,
     "model": "pl",
     "blocksize": 8000
   },
