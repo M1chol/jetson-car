@@ -3,10 +3,10 @@ import os
 import re
 from typing import Any, Callable
 
-from ollama import chat as ollama_chat, list as ollama_list
+from ollama import Client
 
 from agent.carSetup import steer
-from agent.tools import stop_car_abrupt, tools
+from agent.tools import execute_registered_tool, stop_car_abrupt, tools
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 
@@ -37,6 +37,7 @@ class AtomHarness:
         self.model = model or config.get("ollama_model_name", "gemma3:4b")
         self.max_tool_rounds = max_tool_rounds
         self.silent = silent
+        self.client = Client(host=self.ollama_host)
 
     def build_system_prompt(self) -> str:
         tool_docs = []
@@ -95,13 +96,8 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
         name = call.get("name")
         args = call.get("arguments", {})
 
-        if name not in tools:
-            return f"Error: unknown tool '{name}'"
-
-        fn = tools[name]["function"]
-
         try:
-            result = fn(**args)
+            result = execute_registered_tool(name, args)
             return str(result)
         except TypeError as e:
             return f"Error calling '{name}': {e}"
@@ -117,11 +113,10 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
         if not silent:
             print("Atom: ", end="", flush=True)
 
-        for part in ollama_chat(
+        for part in self.client.chat(
             model=self.model,
             messages=messages,
             stream=True,
-            options={"host": self.ollama_host},
         ):
             token = part["message"]["content"]
             chunks.append(token)
@@ -162,11 +157,10 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
             if on_text is not None:
                 on_text(text)
 
-        for part in ollama_chat(
+        for part in self.client.chat(
             model=self.model,
             messages=messages,
             stream=True,
-            options={"host": self.ollama_host},
         ):
             token = part["message"]["content"]
             chunks.append(token)
@@ -254,9 +248,9 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
 
     def check_connection(self) -> bool:
         try:
-            ollama_list()
+            self.client.list()
             return True
-        except ConnectionError as e:
+        except Exception as e:
             if not self.silent:
                 print(f"Cannot reach Ollama: {e}")
             return False
@@ -268,12 +262,18 @@ Aby wywołać funkcje odpowiedz wiadomościa w takim formacie:
 
 
 def main() -> None:
-    harness = AtomHarness()
+    config = load_config()
+    if config.get("harness_type") == "functiongemma":
+        from agent.function_harness import FunctionGemmaHarness
+
+        harness = FunctionGemmaHarness()
+    else:
+        harness = AtomHarness()
 
     if not harness.check_connection():
         return
 
-    print("Atom Agent Harness\n")
+    print(f"Atom Agent Harness ({config.get('harness_type', 'prompt')})\n")
     print("Type 'quit' to exit.\n")
 
     while True:

@@ -2,7 +2,7 @@ import threading
 import time
 import re
 
-from agent.harness import AtomHarness
+from agent.harness_factory import create_harness
 from agent.stt import sttWrapper
 from agent.tts import ttsWrapper
 
@@ -55,7 +55,7 @@ class SentenceStreamer:
 
 class VoiceApp:
     def __init__(self) -> None:
-        self.harness = AtomHarness(silent=True)
+        self.harness = create_harness(silent=True)
         self.tts = ttsWrapper()
         self.tts_streamer = SentenceStreamer(self.tts)
         self.stop_event = threading.Event()

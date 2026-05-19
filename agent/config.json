@@ -14,6 +14,14 @@
     "blocksize": 2048,
     "buffersize": 20
   },
+  "harness_type": "prompt",
   "ollama_model_name": "gemma3:4b",
-  "ollama_host": "http://localhost:11434"
+  "function_ollama_model_name": "functiongemma",
+  "ollama_host": "http://localhost:11434",
+  "camera_config": {
+    "pipeline": "nvarguscamerasrc ! video/x-raw(memory:NVMM),width=1640,height=1232,framerate=20/1,format=NV12 ! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1 sync=false",
+    "warmup_frames": 8,
+    "jpeg_quality": 90,
+    "analysis_prompt": "Opisz krotko, co widzisz na obrazie z kamery samochodu. Wspomnij o przeszkodach, drodze, ludziach, pojazdach i kierunkach tylko wtedy, gdy sa widoczne. Jesli nie masz pewnosci, powiedz to."
+  }
 }
