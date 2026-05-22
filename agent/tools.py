@@ -169,6 +169,7 @@ def analizuj_obraz_z_kamery() -> dict[str, Any]:
             "image": {
                 "width": frame.width,
                 "height": frame.height,
+                "saved_path": frame.saved_path,
             },
         }
     except Exception as e:
